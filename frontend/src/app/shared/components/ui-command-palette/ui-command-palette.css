@@ -1,0 +1,35 @@
+.shade {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  background: #0006;
+}
+section {
+  position: fixed;
+  z-index: 51;
+  top: 20%;
+  left: 50%;
+  display: grid;
+  width: min(34rem, 90vw);
+  transform: translateX(-50%);
+  padding: 0.6rem;
+  border-radius: 0.7rem;
+  background: var(--surface-card);
+  box-shadow: 0 15px 40px #0004;
+}
+input,
+button {
+  padding: 0.65rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-color);
+  text-align: left;
+}
+input {
+  border-bottom: 1px solid var(--surface-border);
+  outline: 0;
+}
+button:hover {
+  background: var(--surface-hover);
+  cursor: pointer;
+}

@@ -1,0 +1,5 @@
+<nav>
+  @for (item of items(); track item) {
+    <button (click)="selected.emit(item)">{{ item }}</button>
+  }
+</nav>

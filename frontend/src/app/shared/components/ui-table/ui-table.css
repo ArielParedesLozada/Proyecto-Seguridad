@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+.table-wrap {
+  overflow: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+th {
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid var(--surface-border);
+  color: var(--text-color-secondary);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+::ng-deep td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--surface-border);
+}

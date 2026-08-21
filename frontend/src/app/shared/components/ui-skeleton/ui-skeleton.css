@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+span {
+  display: block;
+  border-radius: 0.3rem;
+  background: linear-gradient(
+    90deg,
+    var(--surface-hover),
+    var(--surface-card),
+    var(--surface-hover)
+  );
+  background-size: 200%;
+  animation: load 1.4s infinite;
+}
+.circle {
+  border-radius: 50%;
+}
+@keyframes load {
+  to {
+    background-position: -200%;
+  }
+}

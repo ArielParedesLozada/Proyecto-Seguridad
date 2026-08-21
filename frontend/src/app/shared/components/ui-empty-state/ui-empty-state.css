@@ -1,0 +1,27 @@
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 3.5rem 1rem;
+  color: var(--text-color-secondary);
+  text-align: center;
+}
+.empty-state span {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--surface-hover);
+  color: var(--primary-color);
+  font-size: 1.7rem;
+}
+.empty-state h2 {
+  margin: 0.55rem 0 0;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+.empty-state p {
+  margin: 0;
+  font-size: 0.85rem;
+}

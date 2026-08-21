@@ -1,0 +1,13 @@
+@if (visible()) {
+  <div class="menu">
+    @for (item of items(); track item.id) {
+      <button
+        type="button"
+        [class.danger]="item.danger"
+        (click)="chosen.emit(item.id); visible.set(false)"
+      >
+        {{ item.label }}
+      </button>
+    }
+  </div>
+}

@@ -1,0 +1,4 @@
+@if (visible()) {
+  <div class="backdrop" (click)="visible.set(false)"></div>
+  <aside><ng-content /></aside>
+}

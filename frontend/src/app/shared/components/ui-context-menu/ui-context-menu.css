@@ -1,0 +1,31 @@
+:host {
+  position: relative;
+}
+.menu {
+  position: absolute;
+  z-index: 20;
+  min-width: 10rem;
+  padding: 0.35rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.55rem;
+  background: var(--surface-card);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+}
+button {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.78rem;
+}
+button:hover {
+  background: var(--surface-hover);
+}
+button.danger {
+  color: #dc2626;
+}

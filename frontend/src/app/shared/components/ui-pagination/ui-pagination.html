@@ -1,0 +1,9 @@
+<nav class="pagination" aria-label="Paginación">
+  <button type="button" (click)="select(page() - 1)" [disabled]="page() === 1" aria-label="Página anterior"><svg lucideChevronLeft [size]="16"></svg></button>
+  @for (item of pages(); track item) {
+    <button type="button" [class.active]="item === page()" (click)="select(item)">
+      {{ item }}
+    </button>
+  }
+  <button type="button" (click)="select(page() + 1)" [disabled]="page() === totalPages()" aria-label="Página siguiente"><svg lucideChevronRight [size]="16"></svg></button>
+</nav>

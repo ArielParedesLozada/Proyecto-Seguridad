@@ -1,0 +1,12 @@
+button {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.4rem;
+  background: var(--surface-card);
+  color: var(--text-color);
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}

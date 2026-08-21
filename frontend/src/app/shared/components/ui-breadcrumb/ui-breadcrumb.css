@@ -1,0 +1,14 @@
+nav {
+  display: flex;
+  gap: 0.4rem;
+}
+button {
+  border: 0;
+  background: transparent;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+}
+button:not(:last-child):after {
+  content: '/';
+  margin-left: 0.4rem;
+}

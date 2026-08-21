@@ -1,0 +1,13 @@
+.progress {
+  height: 0.42rem;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--surface-hover);
+}
+i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary-color);
+  transition: width 0.2s;
+}

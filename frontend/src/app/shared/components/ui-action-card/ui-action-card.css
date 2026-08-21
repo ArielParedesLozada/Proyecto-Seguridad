@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+
+.ui-action-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  gap: 0.9rem;
+  padding: 1.15rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  color: var(--text-color);
+  background: var(--surface-card);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.ui-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: 0 12px 25px rgb(15 23 42 / 0.1);
+}
+
+.ui-action-icon {
+  display: grid;
+  place-items: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0.75rem;
+}
+
+.tone-primary {
+  color: var(--primary-700);
+  background: var(--primary-100);
+}
+
+.tone-info {
+  color: var(--color-info);
+  background: var(--color-info-soft);
+}
+
+.tone-warning {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.ui-action-copy {
+  min-width: 0;
+}
+
+.ui-action-copy strong,
+.ui-action-copy small {
+  display: block;
+}
+
+.ui-action-copy small {
+  margin-top: 0.25rem;
+  color: var(--text-color-secondary);
+}
+
+.ui-action-end {
+  display: grid;
+  color: var(--text-color-secondary);
+}

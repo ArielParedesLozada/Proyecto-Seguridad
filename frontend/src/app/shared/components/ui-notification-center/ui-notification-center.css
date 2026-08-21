@@ -1,0 +1,11 @@
+section {
+  padding: 0.8rem;
+  background: var(--surface-card);
+  font-size: 0.8rem;
+}
+p {
+  padding: 0.55rem 0;
+  margin: 0;
+  border-bottom: 1px solid var(--surface-border);
+  color: var(--text-color-secondary);
+}

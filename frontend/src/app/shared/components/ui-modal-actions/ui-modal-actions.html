@@ -1,0 +1,13 @@
+<footer class="modal-actions">
+  <app-ui-button
+    [label]="cancelLabel()"
+    severity="secondary"
+    [outlined]="true"
+    (pressed)="cancelled.emit()"
+  />
+  <app-ui-button
+    [label]="primaryLabel()"
+    [disabled]="primaryDisabled()"
+    (pressed)="confirmed.emit()"
+  />
+</footer>

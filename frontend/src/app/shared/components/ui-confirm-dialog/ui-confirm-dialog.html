@@ -1,0 +1,16 @@
+<app-ui-modal [title]="title()" [(visible)]="visible" width="26rem"
+  ><div class="confirm">
+    <p>{{ message() }}</p>
+    <div>
+      <app-ui-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (pressed)="cancelled.emit(); visible.set(false)"
+      /><app-ui-button
+        [label]="confirmLabel()"
+        severity="danger"
+        (pressed)="confirmed.emit(); visible.set(false)"
+      />
+    </div></div
+></app-ui-modal>

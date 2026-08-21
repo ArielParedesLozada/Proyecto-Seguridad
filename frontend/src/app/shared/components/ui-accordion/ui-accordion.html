@@ -1,0 +1,8 @@
+<section>
+  <button (click)="open.update((v) => !v)">
+    {{ title() }}<span>{{ open() ? '⌃' : '⌄' }}</span>
+  </button>
+  @if (open()) {
+    <div><ng-content /></div>
+  }
+</section>
