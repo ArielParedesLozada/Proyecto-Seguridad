@@ -1,0 +1,14 @@
+button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.7rem;
+  border: 0;
+  background: var(--surface-card);
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 650;
+}
+div {
+  border-top: 1px solid var(--surface-border);
+}

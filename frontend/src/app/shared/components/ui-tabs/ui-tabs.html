@@ -1,0 +1,16 @@
+<nav class="tabs" aria-label="Archivos abiertos">
+  @for (tab of tabs(); track tab.id) {
+    <button
+      type="button"
+      class="tab"
+      [class.active]="tab.id === activeId()"
+      (click)="selected.emit(tab.id)"
+    >
+      <span>{{ tab.label }}</span>
+      @if (tab.dirty) {
+        <i></i>
+      }
+      <b (click)="$event.stopPropagation(); closed.emit(tab.id)" aria-label="Cerrar pestaña">×</b>
+    </button>
+  }
+</nav>

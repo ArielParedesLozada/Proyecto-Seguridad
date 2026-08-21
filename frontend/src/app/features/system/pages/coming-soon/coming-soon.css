@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+.coming-soon {
+  display: grid;
+  place-items: start center;
+  align-content: center;
+  min-height: 100%;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+.icon {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.25rem;
+  border-radius: 1rem;
+  color: var(--primary-color);
+  background: var(--primary-100);
+}
+.eyebrow {
+  margin: 0 0 0.65rem;
+  color: var(--primary-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.coming-soon h1 {
+  margin: 0 0 0.65rem;
+  color: var(--text-color);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.04em;
+}
+.coming-soon p:not(.eyebrow) {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--text-color-secondary);
+  line-height: 1.6;
+}
+.coming-soon a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.65rem;
+  color: var(--primary-color);
+  background: var(--primary-50);
+  font-weight: 700;
+  text-decoration: none;
+}
+.coming-soon a:hover {
+  background: var(--primary-100);
+}

@@ -1,0 +1,16 @@
+<app-ui-modal title="Cambios sin guardar" [(visible)]="visible" width="26rem"
+  ><div class="notice">
+    <p>Tienes cambios sin guardar. ¿Qué deseas hacer?</p>
+    <div>
+      <app-ui-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (pressed)="cancel.emit(); visible.set(false)"
+      /><app-ui-button
+        label="Descartar cambios"
+        severity="danger"
+        (pressed)="discard.emit(); visible.set(false)"
+      /><app-ui-button label="Guardar" (pressed)="save.emit(); visible.set(false)" />
+    </div></div
+></app-ui-modal>

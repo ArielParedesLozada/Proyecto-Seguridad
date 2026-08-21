@@ -1,0 +1,16 @@
+span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: #16a34a;
+}
+i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.offline {
+  color: var(--text-color-secondary);
+}

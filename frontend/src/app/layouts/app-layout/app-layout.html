@@ -1,0 +1,86 @@
+<div
+  class="application-shell"
+  [class.sidebar-collapsed]="!sidebarOpen()"
+  [class.mobile-sidebar-open]="mobileMenuOpen()"
+>
+  <button
+    class="sidebar-backdrop"
+    type="button"
+    aria-label="Cerrar navegación"
+    (click)="closeMobileMenu()"
+  ></button>
+  <aside class="sidebar" aria-label="Navegación principal">
+    <button
+      class="mobile-close"
+      type="button"
+      aria-label="Cerrar navegación"
+      (click)="closeMobileMenu()"
+    >
+      <svg lucideX [size]="21"></svg>
+    </button>
+    <a
+      class="brand"
+      routerLink="/"
+      aria-label="LatexLab, ir a proyectos"
+      (click)="closeMobileMenu()"
+    >
+      <span class="brand-mark"><svg lucideBookOpen [size]="21"></svg></span>
+      <span class="brand-name">LatexLab</span>
+    </a>
+
+    <nav class="navigation">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="closeMobileMenu()"
+      >
+        <svg lucideFolderOpen [size]="20"></svg><span>Proyectos</span>
+      </a>
+      <a routerLink="/shared" (click)="closeMobileMenu()"
+        ><svg lucideShare2 [size]="20"></svg><span>Compartidos conmigo</span></a
+      >
+      <a routerLink="/templates" (click)="closeMobileMenu()"
+        ><svg lucideFiles [size]="20"></svg><span>Plantillas</span></a
+      >
+      <a routerLink="/trash" (click)="closeMobileMenu()"
+        ><svg lucideTrash2 [size]="20"></svg><span>Papelera</span></a
+      >
+    </nav>
+
+    <a class="settings-link" routerLink="/settings" (click)="closeMobileMenu()"
+      ><svg lucideSettings [size]="20"></svg><span>Configuración</span></a
+    >
+  </aside>
+
+  <div class="content-shell">
+    <header class="topbar">
+      <button
+        class="icon-control"
+        type="button"
+        (click)="toggleSidebar()"
+        aria-label="Mostrar u ocultar navegación"
+      >
+        @if (sidebarOpen()) {
+          <svg lucideMenu [size]="23"></svg>
+        } @else {
+          <svg lucideChevronLeft [size]="23"></svg>
+        }
+      </button>
+      <div class="topbar-actions">
+        <button class="theme-control" type="button" (click)="theme.toggle()">
+          @if (theme.darkMode()) {
+            <svg lucideSun [size]="18"></svg><span>Claro</span>
+          } @else {
+            <svg lucideMoon [size]="18"></svg><span>Oscuro</span>
+          }
+        </button>
+        <button class="profile" type="button" aria-label="Abrir menú de Diego">
+          <span>DS</span><strong>Diego</strong>
+        </button>
+      </div>
+    </header>
+    <main class="page-content"><router-outlet /></main>
+    <app-ui-footer />
+  </div>
+</div>

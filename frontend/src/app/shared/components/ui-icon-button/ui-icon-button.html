@@ -1,0 +1,9 @@
+<button
+  type="button"
+  [disabled]="disabled()"
+  [attr.aria-label]="label()"
+  [title]="label()"
+  (click)="pressed.emit()"
+>
+  <span>{{ icon() }}</span>
+</button>

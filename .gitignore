@@ -11,3 +11,6 @@ devenv.local.yaml
 
 # Node
 node_modules
+
+# Local frontend configuration (contains the PrimeUI license key)
+/frontend/public/runtime-config.js

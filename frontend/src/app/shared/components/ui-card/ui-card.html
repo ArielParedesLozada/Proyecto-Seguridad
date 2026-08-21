@@ -1,0 +1,11 @@
+<section class="ui-card">
+  @if (title()) {
+    <header class="ui-card-header">
+      <h2>{{ title() }}</h2>
+      @if (subtitle()) {
+        <p>{{ subtitle() }}</p>
+      }
+    </header>
+  }
+  <ng-content />
+</section>

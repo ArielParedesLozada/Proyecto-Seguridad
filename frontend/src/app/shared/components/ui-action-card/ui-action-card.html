@@ -1,0 +1,16 @@
+<button class="ui-action-card" type="button" (click)="pressed.emit()">
+  <span
+    class="ui-action-icon"
+    [class.tone-primary]="tone() === 'primary'"
+    [class.tone-info]="tone() === 'info'"
+    [class.tone-warning]="tone() === 'warning'"
+    ><ng-content select="[uiActionIcon]"
+  /></span>
+  <span class="ui-action-copy">
+    <strong>{{ title() }}</strong>
+    @if (description()) {
+      <small>{{ description() }}</small>
+    }
+  </span>
+  <span class="ui-action-end"><ng-content select="[uiActionEnd]" /></span>
+</button>

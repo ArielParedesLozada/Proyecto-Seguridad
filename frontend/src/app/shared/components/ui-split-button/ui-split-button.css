@@ -1,0 +1,56 @@
+:host {
+  display: inline-block;
+}
+.split-button {
+  position: relative;
+  display: flex;
+}
+.split-button app-ui-button ::ng-deep .p-button {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+.toggle {
+  min-width: 2rem;
+  border: 0;
+  border-left: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: 0 0.5rem 0.5rem 0;
+  background: var(--primary-color);
+  color: var(--primary-color-contrast);
+  cursor: pointer;
+}
+.toggle:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+.toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 13rem;
+  padding: 0.35rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.55rem;
+  background: var(--surface-card);
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.14);
+}
+.menu button {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.78rem;
+}
+.menu button:hover {
+  background: var(--surface-hover);
+}
+.menu .danger {
+  color: #dc2626;
+}

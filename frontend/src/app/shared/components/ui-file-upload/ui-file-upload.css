@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+.dropzone {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 2rem;
+  border: 1px dashed var(--surface-border);
+  border-radius: 0.75rem;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  text-align: center;
+}
+.dropzone:hover {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 5%, transparent);
+}
+.dropzone input {
+  display: none;
+}
+.dropzone span {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+.dropzone strong {
+  color: var(--text-color);
+  font-size: 0.85rem;
+}
+.dropzone small {
+  font-size: 0.72rem;
+}
+.busy {
+  pointer-events: none;
+  opacity: 0.65;
+}

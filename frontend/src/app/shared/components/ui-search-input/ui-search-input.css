@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+label {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+}
+input {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-color);
+  outline: 0;
+}

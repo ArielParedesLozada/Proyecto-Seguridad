@@ -1,0 +1,77 @@
+<section class="projects-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">ESPACIO DE TRABAJO</p>
+      <h1>Mis proyectos</h1>
+      <p class="intro">Organiza, escribe y compila tus documentos LaTeX en un solo lugar.</p>
+    </div>
+    <button class="primary-action" type="button" (click)="createDialogOpen.set(true)">
+      <svg lucideFilePlus2 [size]="19"></svg>Nuevo proyecto
+    </button>
+  </div>
+  <section class="quick-actions" aria-label="Crear proyecto">
+    <app-ui-action-card title="Proyecto en blanco" description="Comienza desde cero" (pressed)="createDialogOpen.set(true)">
+      <svg uiActionIcon lucideFilePlus2 [size]="22"></svg>
+      <svg uiActionEnd lucideArrowUpRight [size]="18"></svg>
+    </app-ui-action-card>
+    <app-ui-action-card title="Usar plantilla" description="Explora formatos prediseñados" tone="info">
+      <svg uiActionIcon lucideLayoutTemplate [size]="22"></svg>
+      <svg uiActionEnd lucideArrowUpRight [size]="18"></svg>
+    </app-ui-action-card>
+    <app-ui-action-card title="Subir proyecto" description="Importa un archivo .zip" tone="warning">
+      <svg uiActionIcon lucideUpload [size]="22"></svg>
+      <svg uiActionEnd lucideArrowUpRight [size]="18"></svg>
+    </app-ui-action-card>
+  </section>
+  <section class="projects-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Proyectos recientes</h2>
+        <p>Tus documentos y los que compartieron contigo.</p>
+      </div>
+      <app-ui-search-input placeholder="Buscar proyecto" />
+    </div>
+    <div class="table-head">
+      <span>PROYECTO</span><span>PROPIETARIO</span><span>ÚLTIMA EDICIÓN</span><span>ESTADO</span
+      ><span></span>
+    </div>
+    <div class="project-list">
+      @for (project of projects; track project.name) {
+        <article class="project-row">
+          <div class="project-name">
+            <span class="document-icon"><svg lucideFileText [size]="22"></svg></span
+            ><span
+              ><strong>{{ project.name }}</strong
+              ><small>{{ project.description }}</small></span
+            >
+          </div>
+          <div class="owner">
+            <span class="avatar">{{ project.initials }}</span
+            ><span>{{ project.initials === 'DS' ? 'Diego' : 'Ana Martínez' }}</span>
+          </div>
+          <span class="updated">{{ project.updatedAt }}</span
+          ><app-ui-status-badge
+            [label]="project.status"
+            [tone]="project.status === 'Compilado' ? 'success' : 'warning'"
+          /><button class="more" type="button" [attr.aria-label]="'Acciones para ' + project.name">
+            <svg lucideEllipsis [size]="20"></svg>
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+</section>
+<app-ui-modal [(visible)]="createDialogOpen" title="Crear un proyecto" width="28rem"
+  ><div class="create-project-content">
+    <span class="dialog-icon"><svg lucideFilePlus2 [size]="24"></svg></span>
+    <div>
+      <h2>Empieza con un proyecto nuevo</h2>
+      <p>En el siguiente paso podrás elegir una plantilla o crear un documento vacío.</p>
+    </div>
+    <app-ui-modal-actions
+      primaryLabel="Continuar"
+      (cancelled)="createDialogOpen.set(false)"
+      (confirmed)="createDialogOpen.set(false)"
+    />
+  </div></app-ui-modal
+>

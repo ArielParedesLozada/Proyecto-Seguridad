@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+.split {
+  display: grid;
+  grid-template-columns: var(--first, 30%) 1px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+.first,
+.second {
+  min-width: 0;
+  overflow: auto;
+}
+.divider {
+  background: var(--surface-border);
+}
+@media (max-width: 700px) {
+  .split {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1px auto;
+  }
+  .divider {
+    height: 1px;
+  }
+}

@@ -1,0 +1,8 @@
+<section>
+  <strong>Notificaciones</strong>
+  @for (n of notifications(); track n) {
+    <p>{{ n }}</p>
+  } @empty {
+    <p>Sin notificaciones.</p>
+  }
+</section>

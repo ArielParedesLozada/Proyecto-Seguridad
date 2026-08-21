@@ -1,0 +1,9 @@
+select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  background: var(--surface-card);
+  color: var(--text-color);
+  outline-color: var(--primary-color);
+}

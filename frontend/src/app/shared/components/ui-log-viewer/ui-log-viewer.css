@@ -1,0 +1,21 @@
+section {
+  overflow: hidden;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.6rem;
+  background: #111827;
+  color: #d1d5db;
+}
+header {
+  padding: 0.55rem 0.7rem;
+  background: #1f2937;
+  font-size: 0.72rem;
+}
+pre {
+  max-height: 18rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0.8rem;
+  font-family: Consolas, monospace;
+  font-size: 0.73rem;
+  white-space: pre-wrap;
+}

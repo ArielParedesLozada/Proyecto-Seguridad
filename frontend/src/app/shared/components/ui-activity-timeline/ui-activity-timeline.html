@@ -1,0 +1,11 @@
+<ol>
+  @for (a of activities(); track a.title + a.date) {
+    <li>
+      <i></i><strong>{{ a.title }}</strong>
+      <p>{{ a.detail }}</p>
+      <small>{{ a.date }}</small>
+    </li>
+  } @empty {
+    <li>Sin actividad todavía.</li>
+  }
+</ol>

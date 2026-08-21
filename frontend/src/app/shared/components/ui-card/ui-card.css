@@ -1,0 +1,24 @@
+:host {
+  display: block;
+}
+.ui-card {
+  height: 100%;
+  padding: 1.3rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.9rem;
+  background: var(--surface-card);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
+}
+.ui-card-header {
+  margin-bottom: 1.25rem;
+}
+.ui-card-header h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: -0.015em;
+}
+.ui-card-header p {
+  margin: 0.3rem 0 0;
+  color: var(--text-color-secondary);
+  font-size: 0.76rem;
+}

@@ -1,0 +1,8 @@
+<label class="dropzone" [class.busy]="loading()"
+  ><input
+    type="file"
+    [accept]="accept()"
+    (change)="picked.emit($any($event.target).files?.[0])"
+  /><span>↑</span><strong>{{ loading() ? 'Subiendo archivo…' : title() }}</strong
+  ><small>{{ description() }}</small></label
+>

@@ -1,0 +1,9 @@
+@if (visible()) {
+  <div class="shade" (click)="visible.set(false)"></div>
+  <section>
+    <input autofocus placeholder="Escribe un comando…" />
+    @for (command of commands(); track command) {
+      <button (click)="chosen.emit(command); visible.set(false)">{{ command }}</button>
+    }
+  </section>
+}

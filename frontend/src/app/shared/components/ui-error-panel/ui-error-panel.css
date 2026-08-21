@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+.errors {
+  border-top: 1px solid var(--surface-border);
+  font-size: 0.75rem;
+}
+.errors header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0.8rem;
+  background: var(--surface-card);
+}
+.errors header span,
+.errors p {
+  color: var(--text-color-secondary);
+}
+.errors button {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 0;
+  border-top: 1px solid var(--surface-border);
+  background: transparent;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  text-align: left;
+}
+.errors button:hover {
+  background: var(--surface-hover);
+}
+.errors b {
+  color: var(--color-danger);
+}
+.errors .warning b {
+  color: var(--color-warning);
+}
+.errors p {
+  padding: 0.75rem;
+}

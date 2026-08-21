@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+.loading {
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+  padding: 2rem;
+  color: var(--text-color-secondary);
+  font-size: 0.82rem;
+}
+.loading.compact {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+}
+.loading i {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

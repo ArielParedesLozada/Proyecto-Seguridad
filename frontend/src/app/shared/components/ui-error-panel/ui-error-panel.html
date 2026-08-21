@@ -1,0 +1,17 @@
+<section class="errors">
+  <header>
+    <strong>Mensajes de compilación</strong><span>{{ errors().length }}</span>
+  </header>
+  @for (error of errors(); track error.file + error.line) {
+    <button
+      type="button"
+      [class.warning]="error.severity === 'warning'"
+      (click)="selected.emit(error)"
+    >
+      <b>{{ error.severity === 'error' ? 'Error' : 'Aviso' }}</b
+      ><span>{{ error.file }}:{{ error.line }} · {{ error.message }}</span>
+    </button>
+  } @empty {
+    <p>Sin errores de compilación.</p>
+  }
+</section>

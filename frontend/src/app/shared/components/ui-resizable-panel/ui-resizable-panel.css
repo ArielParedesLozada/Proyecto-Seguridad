@@ -1,0 +1,10 @@
+:host,
+aside {
+  display: block;
+  min-height: 0;
+}
+aside {
+  max-width: 100%;
+  overflow: auto;
+  border-right: 1px solid var(--surface-border);
+}

@@ -1,0 +1,7 @@
+<label
+  ><svg lucideSearch [size]="18"></svg
+  ><input
+    type="search"
+    [placeholder]="placeholder()"
+    (input)="changed.emit($any($event.target).value)"
+/></label>
