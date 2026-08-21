@@ -4,12 +4,11 @@ Hacer un clon de Overleaf. Dbe tener las funcionalidades principales
 
 ## REQUERIMIENTOS FUNCIONALES
 
-- Debe tener un editor de un DSL, similar a Latex con capacidades de mostrar imagenes, ecuaciones, etc; y que se vea el PDF al lado
+- Editor de Markdown a PDF
 - Debe poder recompilar el PDF automaticamente al guardar el documento
-- Autocompletado y verificacion de sintaxis de Latex
 - CRUD de proyectos
 - Colaboracion simultanea sobre un mismo proyecto
-- Control de cambios
+- Control de cambios basico (quien hizo el cmabio, cuando hizo el cambio) 
 - Agregar e invitar a usuarios a un proyecto
 - Arbol de archivos 
 - Funcion de copiar un proyecto
