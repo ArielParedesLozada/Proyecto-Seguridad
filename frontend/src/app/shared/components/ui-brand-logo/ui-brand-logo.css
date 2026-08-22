@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  width: auto;
+  height: 4rem;
+}
+
+@media (max-width: 620px) {
+  img {
+    height: 3.2rem;
+  }
+}

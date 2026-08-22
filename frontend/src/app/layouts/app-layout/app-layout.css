@@ -32,7 +32,6 @@
   overflow-x: hidden;
   overflow-y: auto;
 }
-.brand,
 .navigation a,
 .settings-link {
   display: flex;
@@ -42,21 +41,9 @@
   color: var(--text-color);
   text-decoration: none;
 }
-.brand {
+app-ui-brand-logo {
+  display: block;
   padding: 0 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 750;
-  letter-spacing: -0.03em;
-}
-.brand-mark {
-  display: grid;
-  place-items: center;
-  flex: 0 0 2.55rem;
-  height: 2.55rem;
-  color: white;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
-  border-radius: 0.8rem;
-  box-shadow: 0 6px 16px rgb(99 102 241 / 0.22);
 }
 .navigation {
   display: grid;
@@ -149,7 +136,6 @@
   overflow-y: auto;
 }
 .mobile-close { display: none; }
-.sidebar-collapsed .brand-name,
 .sidebar-collapsed .navigation span,
 .sidebar-collapsed .settings-link span {
   display: none;
@@ -158,11 +144,15 @@
   align-items: center;
   padding-inline: 0.75rem;
 }
-.sidebar-collapsed .brand,
 .sidebar-collapsed .navigation a,
 .sidebar-collapsed .settings-link {
   justify-content: center;
   padding-inline: 0.45rem;
+}
+.sidebar-collapsed app-ui-brand-logo {
+  width: 4rem;
+  padding: 0;
+  overflow: hidden;
 }
 @media (max-width: 760px) {
   .application-shell,
