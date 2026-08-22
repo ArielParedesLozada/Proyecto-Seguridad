@@ -9,4 +9,5 @@ export class UiTooltipComponent {
   readonly text = input.required<string>();
   readonly position = input<'top' | 'right'>('top');
   readonly disabled = input(false);
+  readonly showOnFocus = input(true);
 }

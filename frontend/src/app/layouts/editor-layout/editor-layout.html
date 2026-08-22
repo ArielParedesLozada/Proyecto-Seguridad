@@ -2,19 +2,25 @@
   <app-editor-toolbar></app-editor-toolbar>
 
   <section class="editor-content" aria-label="Área de edición del proyecto">
-    <aside class="editor-rail" aria-label="Secciones del proyecto">
-      <button type="button" title="Archivos" aria-label="Archivos"><svg lucideFiles [size]="19"></svg></button>
-      <button type="button" title="Código" aria-label="Código"><svg lucideFileCode2 [size]="19"></svg></button>
-      <button type="button" title="Comentarios" aria-label="Comentarios"><svg lucideMessageSquare [size]="19"></svg></button>
-      <span class="rail-spacer"></span>
-      <button type="button" title="Ayuda" aria-label="Ayuda"><svg lucideHelpCircle [size]="19"></svg></button>
-      <button type="button" title="Configuración" aria-label="Configuración"><svg lucideSettings [size]="19"></svg></button>
-    </aside>
+    <app-editor-sidebar (optionSelected)="toggleSidePanelFromSidebar($event)"></app-editor-sidebar>
 
-    <app-ui-split-pane class="workspace-panes" firstSize="18rem">
+    <app-ui-split-pane
+      class="workspace-panes"
+      firstSize="18rem"
+      [collapsed]="!isSidePanelVisible()"
+      [firstScrollable]="false"
+      [resizable]="true"
+      [collapsible]="true"
+      minFirst="14rem"
+      maxFirst="32rem"
+      minSecond="20rem"
+      (collapseToggled)="toggleSidePanel()"
+    >
       <section primary class="files-panel" aria-label="Archivos del proyecto">
-        <div class="panel-label">Archivos del proyecto</div>
-        <div class="panel-placeholder">Panel de archivos</div>
+        <app-editor-side-panel
+          [view]="activeSidebarOption()"
+          (closed)="isSidePanelVisible.set(false)"
+        ></app-editor-side-panel>
       </section>
 
       <app-ui-split-pane secondary class="document-panes" firstSize="50%">

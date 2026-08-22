@@ -1,0 +1,183 @@
+<aside
+  class="editor-side-panel"
+  [class.is-files]="view() === 'files'"
+  [attr.aria-label]="view() === 'files' ? 'Árbol de archivos' : 'Buscar en el proyecto'"
+>
+  @if (view() === 'files') {
+    <app-ui-split-pane
+      class="files-outline-split"
+      firstSize="60%"
+      orientation="vertical"
+      [resizable]="true"
+      [firstScrollable]="false"
+      minFirst="8rem"
+      maxFirst="70%"
+      minSecond="8rem"
+    >
+      <section primary class="panel-section files-section">
+      <header class="panel-header">
+        <h2>Árbol de archivos</h2>
+        <div class="header-actions" aria-label="Acciones de archivos">
+            <app-ui-tooltip text="Nuevo archivo" position="right" [showOnFocus]="false">
+              <button type="button" aria-label="Nuevo archivo" (click)="openFileDialog('new')"><svg lucideFilePlus2 [size]="17"></svg></button>
+            </app-ui-tooltip>
+            <app-ui-tooltip text="Nueva carpeta" position="right" [showOnFocus]="false">
+              <button type="button" aria-label="Nueva carpeta" (click)="openFolderDialog()"><svg lucideFolderPlus [size]="17"></svg></button>
+            </app-ui-tooltip>
+            <app-ui-tooltip text="Subir archivo" position="right" [showOnFocus]="false">
+              <button type="button" aria-label="Subir archivo" (click)="openFileDialog('upload')"><svg lucideUpload [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Cerrar panel" position="right" [showOnFocus]="false">
+            <button type="button" aria-label="Cerrar panel" (click)="closed.emit()"><svg lucideX [size]="17"></svg></button>
+          </app-ui-tooltip>
+        </div>
+      </header>
+
+        @for (entry of projectEntries(); track entry.name) {
+          <button class="file-row" type="button">
+            @if (entry.type === 'file') {
+              <svg lucideFileCode2 [size]="17"></svg>
+            } @else {
+              <svg lucideFolder [size]="17"></svg>
+            }
+            <span>{{ entry.name }}</span>
+          </button>
+        }
+      </section>
+
+      <section secondary class="panel-section outline-section">
+      <header class="panel-header">
+        <h2>Estructura del documento</h2>
+      </header>
+      <span class="outline-item">Introducción</span>
+      </section>
+    </app-ui-split-pane>
+  } @else {
+    <section class="search-section">
+      <header class="panel-header">
+        <h2>Buscar en el proyecto</h2>
+        <app-ui-tooltip text="Cerrar panel" position="right" [showOnFocus]="false">
+          <button type="button" aria-label="Cerrar panel" (click)="closed.emit()"><svg lucideX [size]="17"></svg></button>
+        </app-ui-tooltip>
+      </header>
+
+      <div class="search-form">
+        <app-ui-search-input
+          placeholder="Buscar en el proyecto"
+          (changed)="searchQuery.set($event)"
+        ></app-ui-search-input>
+        <button class="search-submit" type="button">Buscar</button>
+      </div>
+
+      <div class="search-options" aria-label="Opciones de búsqueda">
+        <app-ui-tooltip text="Coincidir mayúsculas y minúsculas" position="right" [showOnFocus]="false">
+          <button
+            type="button"
+            aria-label="Coincidir mayúsculas y minúsculas"
+            [attr.aria-pressed]="activeSearchOptions().caseSensitive"
+            [class.is-active]="activeSearchOptions().caseSensitive"
+            (click)="toggleSearchOption('caseSensitive')"
+          >
+            Aa
+          </button>
+        </app-ui-tooltip>
+        <app-ui-tooltip text="Expresión regular" position="right" [showOnFocus]="false">
+          <button
+            type="button"
+            aria-label="Expresión regular"
+            [attr.aria-pressed]="activeSearchOptions().regularExpression"
+            [class.is-active]="activeSearchOptions().regularExpression"
+            (click)="toggleSearchOption('regularExpression')"
+          >
+            .*
+          </button>
+        </app-ui-tooltip>
+        <app-ui-tooltip text="Palabra completa" position="right" [showOnFocus]="false">
+          <button
+            type="button"
+            aria-label="Palabra completa"
+            [attr.aria-pressed]="activeSearchOptions().wholeWord"
+            [class.is-active]="activeSearchOptions().wholeWord"
+            (click)="toggleSearchOption('wholeWord')"
+          >
+            W
+          </button>
+        </app-ui-tooltip>
+      </div>
+    </section>
+  }
+</aside>
+
+<app-ui-modal
+  title="Agregar archivos"
+  width="44rem"
+  [visible]="activeModal() === 'file'"
+  (visibleChange)="updateFileModalVisibility($event)"
+>
+  <div class="file-dialog">
+    <nav class="dialog-nav" aria-label="Opciones para agregar archivos">
+      <button type="button" [class.is-active]="fileDialogMode() === 'new'" (click)="fileDialogMode.set('new')">
+        <svg lucideFileCode2 [size]="17"></svg>
+        Nuevo archivo
+      </button>
+      <button type="button" [class.is-active]="fileDialogMode() === 'upload'" (click)="fileDialogMode.set('upload')">
+        <svg lucideUpload [size]="17"></svg>
+        Subir archivo
+      </button>
+    </nav>
+
+    <section class="dialog-content">
+      @if (fileDialogMode() === 'new') {
+        <app-ui-form-field label="Nombre del archivo">
+          <input
+            type="text"
+            aria-label="Nombre del archivo"
+            [value]="fileName()"
+            (input)="fileName.set($any($event.target).value)"
+          />
+        </app-ui-form-field>
+      } @else {
+        <app-ui-file-upload
+          title="Arrastra o pega tus archivos aquí"
+          description="Selecciona archivos desde tu equipo. También puedes elegir una carpeta."
+          accept="*/*"
+          (picked)="selectUpload($event)"
+        ></app-ui-file-upload>
+        <button class="folder-select" type="button">Seleccionar carpeta</button>
+        @if (selectedUploadName()) {
+          <p class="selected-upload">Archivo seleccionado: {{ selectedUploadName() }}</p>
+        }
+      }
+    </section>
+  </div>
+
+  <footer class="dialog-actions">
+    <app-ui-button label="Cancelar" severity="secondary" [outlined]="true" (pressed)="closeModal()"></app-ui-button>
+    @if (fileDialogMode() === 'new') {
+      <app-ui-button label="Crear" (pressed)="createFile()"></app-ui-button>
+    }
+  </footer>
+</app-ui-modal>
+
+<app-ui-modal
+  title="Nueva carpeta"
+  width="28rem"
+  [visible]="activeModal() === 'folder'"
+  (visibleChange)="updateFolderModalVisibility($event)"
+>
+  <div class="folder-dialog">
+    <app-ui-form-field label="Nombre de la carpeta">
+      <input
+        type="text"
+        aria-label="Nombre de la carpeta"
+        [value]="folderName()"
+        (input)="folderName.set($any($event.target).value)"
+      />
+    </app-ui-form-field>
+  </div>
+
+  <footer class="dialog-actions">
+    <app-ui-button label="Cancelar" severity="secondary" [outlined]="true" (pressed)="closeModal()"></app-ui-button>
+    <app-ui-button label="Crear" (pressed)="createFolder()"></app-ui-button>
+  </footer>
+</app-ui-modal>

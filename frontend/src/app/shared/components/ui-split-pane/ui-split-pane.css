@@ -4,22 +4,79 @@
 }
 .split {
   display: grid;
-  grid-template-columns: var(--first, 30%) 1px minmax(0, 1fr);
+  grid-template-columns: var(--first, 30%) 0.4rem minmax(0, 1fr);
   height: 100%;
   min-height: 0;
+}
+.split.is-vertical {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--first, 30%) 0.4rem minmax(0, 1fr);
+}
+.split.is-collapsed {
+  grid-template-columns: 0 0.4rem minmax(0, 1fr);
+}
+.split.is-vertical.is-collapsed {
+  grid-template-rows: 0 0.4rem minmax(0, 1fr);
+}
+.split.is-collapsed .first {
+  visibility: hidden;
 }
 .first,
 .second {
   min-width: 0;
   overflow: auto;
 }
+.split.first-overflow-visible > .first {
+  position: relative;
+  z-index: 3;
+  overflow: visible;
+}
 .divider {
+  position: relative;
+  z-index: 2;
   background: var(--surface-border);
+}
+.divider.is-resizable {
+  cursor: col-resize;
+  touch-action: none;
+}
+.is-vertical .divider.is-resizable {
+  cursor: row-resize;
+}
+.divider.is-resizable:hover {
+  background: var(--primary-color);
+}
+.divider button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 1.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.4rem;
+  padding: 0;
+  color: var(--text-color-secondary);
+  background: var(--surface-card);
+  font: inherit;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+.divider button:hover {
+  color: var(--primary-color);
+  background: var(--surface-hover);
 }
 @media (max-width: 700px) {
   .split {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1px auto;
+  }
+  .split.is-collapsed {
+    grid-template-rows: 0 0.4rem minmax(0, 1fr);
+  }
+  .split.is-vertical {
+    grid-template-rows: var(--first, 30%) 0.4rem minmax(0, 1fr);
   }
   .divider {
     height: 1px;

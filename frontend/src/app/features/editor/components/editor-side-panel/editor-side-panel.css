@@ -1,0 +1,249 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+
+.editor-side-panel {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  color: var(--text-color);
+  background: var(--surface-card);
+}
+
+.files-outline-split {
+  height: 100%;
+}
+
+.panel-section,
+.search-section {
+  min-height: 0;
+  overflow: visible;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3rem;
+  padding: 0 0.6rem 0 0.85rem;
+}
+
+h2 {
+  margin: 0;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.header-actions,
+.search-options,
+.search-form {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions {
+  gap: 0.1rem;
+}
+
+.header-actions button,
+.panel-header > app-ui-tooltip button,
+.search-options button {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.4rem;
+  color: var(--text-color-secondary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.file-dialog {
+  display: grid;
+  grid-template-columns: 11.5rem minmax(0, 1fr);
+  min-height: 16rem;
+}
+
+.dialog-nav {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+  padding: 0.75rem 0.5rem;
+  border-right: 1px solid var(--surface-border);
+  background: var(--surface-ground);
+}
+
+.dialog-nav button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.35rem;
+  border: 0;
+  border-radius: 0.4rem;
+  padding: 0 0.6rem;
+  color: var(--text-color-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dialog-nav button:hover,
+.dialog-nav button.is-active {
+  color: var(--primary-color);
+  background: var(--highlight-bg);
+}
+
+.dialog-content,
+.folder-dialog {
+  padding: 1.25rem;
+}
+
+.dialog-content input,
+.folder-dialog input {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.45rem;
+  padding: 0 0.7rem;
+  color: var(--text-color);
+  background: var(--surface-card);
+  font: inherit;
+  outline: 0;
+}
+
+.dialog-content input:focus,
+.folder-dialog input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
+.dialog-content app-ui-file-upload {
+  display: block;
+}
+
+.folder-select {
+  margin-top: 0.85rem;
+  border: 0;
+  padding: 0;
+  color: var(--primary-color);
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.selected-upload {
+  margin: 0.75rem 0 0;
+  color: var(--text-color-secondary);
+  font-size: 0.78rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+@media (max-width: 600px) {
+  .file-dialog {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-nav {
+    grid-template-columns: 1fr 1fr;
+    border-right: 0;
+    border-bottom: 1px solid var(--surface-border);
+  }
+}
+
+.header-actions button:hover,
+.panel-header > app-ui-tooltip button:hover,
+.search-options button:hover,
+.search-options button.is-active {
+  color: var(--primary-color);
+  background: var(--highlight-bg);
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: calc(100% - 1rem);
+  min-height: 2.25rem;
+  margin: 0 0.5rem;
+  border: 0;
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  color: var(--text-color);
+  background: transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.file-row:hover {
+  color: var(--primary-color);
+  background: var(--surface-hover);
+}
+
+.outline-item {
+  display: block;
+  padding: 0.45rem 0.85rem 0.45rem 1.55rem;
+  color: var(--text-color-secondary);
+  font-size: 0.84rem;
+}
+
+.search-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-form {
+  gap: 0.45rem;
+  padding: 0 0.75rem;
+}
+
+.search-form app-ui-search-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-submit {
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 0.45rem;
+  padding: 0 0.7rem;
+  color: var(--primary-color-contrast);
+  background: var(--primary-color);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.search-submit:hover {
+  background: var(--primary-color-hover);
+}
+
+.search-options {
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.search-options button {
+  width: 1.8rem;
+  height: 1.8rem;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+}

@@ -29,6 +29,9 @@
 .tip:focus-within small {
   display: block;
 }
+.tip.tip-focus-disabled:focus-within:not(:hover) small {
+  display: none;
+}
 .tip.tip-disabled small {
   display: none;
 }

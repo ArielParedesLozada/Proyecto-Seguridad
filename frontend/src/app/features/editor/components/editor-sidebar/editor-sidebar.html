@@ -1,0 +1,25 @@
+<aside class="editor-sidebar" aria-label="Herramientas del proyecto">
+  <app-ui-tooltip text="Árbol de archivos" position="right" [showOnFocus]="false">
+    <button
+      type="button"
+      aria-label="Árbol de archivos"
+      [attr.aria-pressed]="activeOption() === 'files'"
+      [class.is-active]="activeOption() === 'files'"
+      (click)="selectOption('files')"
+    >
+      <svg lucideFiles [size]="19"></svg>
+    </button>
+  </app-ui-tooltip>
+
+  <app-ui-tooltip text="Buscar en el proyecto" position="right" [showOnFocus]="false">
+    <button
+      type="button"
+      aria-label="Buscar en el proyecto"
+      [attr.aria-pressed]="activeOption() === 'search'"
+      [class.is-active]="activeOption() === 'search'"
+      (click)="selectOption('search')"
+    >
+      <svg lucideSearch [size]="19"></svg>
+    </button>
+  </app-ui-tooltip>
+</aside>
