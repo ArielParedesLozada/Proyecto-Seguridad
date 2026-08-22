@@ -10,5 +10,5 @@ import { RouterLink } from '@angular/router';
 })
 export class UiBrandLogoComponent {
   readonly link = input('/');
-  readonly ariaLabel = input('CipherTex, ir al inicio');
+  readonly ariaLabel = input('ChiperTex, ir al inicio');
 }

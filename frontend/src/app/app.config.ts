@@ -6,7 +6,7 @@ import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
-const LatexLabPreset = definePreset(Aura, {
+const ChiperTexPreset = definePreset(Aura, {
   semantic: {
     primary: {
       50: '{indigo.50}',
@@ -52,7 +52,7 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       license: primeUiLicense,
       ripple: true,
-      theme: { preset: LatexLabPreset, options: { darkModeSelector: '.app-dark' } },
+      theme: { preset: ChiperTexPreset, options: { darkModeSelector: '.app-dark' } },
     }),
   ],
 };

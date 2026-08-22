@@ -255,7 +255,9 @@ app-ui-brand-logo {
   display: none;
 }
 .sidebar-collapsed .brand-name,
-.mobile-close { display: none; }
+.mobile-close {
+  display: none;
+}
 .sidebar-collapsed .navigation span,
 .sidebar-collapsed .project-links,
 .sidebar-collapsed .settings-link span {
@@ -287,70 +289,71 @@ app-ui-brand-logo {
   bottom: 1rem;
   left: calc(100% + 0.6rem);
   width: 12rem;
-.sidebar-collapsed app-ui-brand-logo {
-  width: 4rem;
-  padding: 0;
-  overflow: hidden;
-}
-@media (max-width: 760px) {
-  .application-shell,
-  .application-shell.sidebar-collapsed {
-    grid-template-columns: 1fr;
+  .sidebar-collapsed app-ui-brand-logo {
+    width: 4rem;
+    padding: 0;
+    overflow: hidden;
   }
-  .sidebar {
-    position: fixed;
-    z-index: 20;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: min(14rem, 82vw);
-    height: 100dvh;
-    transform: translateX(-105%);
-    transition: transform 0.22s ease;
-    box-shadow: 12px 0 30px rgb(15 23 42 / 0.16);
-    isolation: isolate;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-  .mobile-sidebar-open .sidebar {
-    transform: translateX(0);
-  }
-  .mobile-close {
-    position: absolute;
-    top: 0.85rem;
-    right: 0.85rem;
-    display: grid;
-    place-items: center;
-    width: 2.3rem;
-    height: 2.3rem;
-    border: 0;
-    border-radius: 0.6rem;
-    color: var(--text-color-secondary);
-    background: transparent;
-    cursor: pointer;
-  }
-  .mobile-close:hover {
-    background: var(--surface-hover);
-  }
-  .sidebar-backdrop {
-    position: fixed;
-    z-index: 10;
-    inset: 0;
-    display: none;
-    border: 0;
-    background: rgb(15 23 42 / 0.55);
-    backdrop-filter: blur(2px);
-  }
-  .mobile-sidebar-open .sidebar-backdrop {
-    display: block;
-  }
-  .topbar {
-    min-height: 4.75rem;
-  }
-  .page-content {
-    border-radius: 0;
-  }
-  .profile strong {
-    display: none;
+  @media (max-width: 760px) {
+    .application-shell,
+    .application-shell.sidebar-collapsed {
+      grid-template-columns: 1fr;
+    }
+    .sidebar {
+      position: fixed;
+      z-index: 20;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: min(14rem, 82vw);
+      height: 100dvh;
+      transform: translateX(-105%);
+      transition: transform 0.22s ease;
+      box-shadow: 12px 0 30px rgb(15 23 42 / 0.16);
+      isolation: isolate;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    .mobile-sidebar-open .sidebar {
+      transform: translateX(0);
+    }
+    .mobile-close {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      display: grid;
+      place-items: center;
+      width: 2.3rem;
+      height: 2.3rem;
+      border: 0;
+      border-radius: 0.6rem;
+      color: var(--text-color-secondary);
+      background: transparent;
+      cursor: pointer;
+    }
+    .mobile-close:hover {
+      background: var(--surface-hover);
+    }
+    .sidebar-backdrop {
+      position: fixed;
+      z-index: 10;
+      inset: 0;
+      display: none;
+      border: 0;
+      background: rgb(15 23 42 / 0.55);
+      backdrop-filter: blur(2px);
+    }
+    .mobile-sidebar-open .sidebar-backdrop {
+      display: block;
+    }
+    .topbar {
+      min-height: 4.75rem;
+    }
+    .page-content {
+      border-radius: 0;
+    }
+    .profile strong {
+      display: none;
+    }
   }
 }
