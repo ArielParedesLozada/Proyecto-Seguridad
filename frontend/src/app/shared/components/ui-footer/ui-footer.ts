@@ -7,7 +7,7 @@ import { Component, input } from '@angular/core';
   styleUrl: './ui-footer.css',
 })
 export class UiFooterComponent {
-  readonly productName = input('LatexLab');
+  readonly productName = input('ChiperTex');
   readonly version = input('v0.1.0');
   readonly year = input(new Date().getFullYear());
 }

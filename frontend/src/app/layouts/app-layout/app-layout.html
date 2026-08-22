@@ -19,22 +19,10 @@
       <svg lucideX [size]="21"></svg>
     </button>
     <app-ui-brand-logo
-      link="/projects"
-      ariaLabel="CipherTex, ir a proyectos"
+      link="/"
+      ariaLabel="ChiperTex, ir a proyectos"
       (click)="closeMobileMenu()"
-    ></app-ui-brand-logo>
-
-    <nav class="navigation">
-      <a
-        routerLink="/projects"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        (click)="closeMobileMenu()"
-      >
-        <span class="brand-mark"><svg lucideBookOpen [size]="21"></svg></span>
-        <span class="brand-name">LatexLab</span>
-      </a>
-    </app-ui-tooltip>
+    />
 
     <nav class="navigation">
       <app-ui-tooltip text="Proyectos" position="right" [disabled]="sidebarOpen()">
@@ -140,6 +128,6 @@
       </div>
     </header>
     <main class="page-content"><router-outlet /></main>
-    <app-ui-footer />
+    <app-ui-footer productName="ChiperTex" />
   </div>
 </div>
