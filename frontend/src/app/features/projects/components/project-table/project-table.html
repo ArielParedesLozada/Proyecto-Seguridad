@@ -1,0 +1,60 @@
+@if (projects().length) {
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th class="select-cell">
+            <input
+              type="checkbox"
+              aria-label="Seleccionar todos los proyectos visibles"
+              [checked]="allSelected()"
+              [indeterminate]="someSelected()"
+              (change)="toggleAll($any($event.target).checked)"
+            />
+          </th>
+          <th [attr.aria-sort]="sortState('title')">
+            <button class="sort-control" type="button" (click)="sortBy('title')">
+              Proyecto
+              @if (sortKey() === 'title') {
+                <span class="sort-direction">{{ sortIcon('title') }}</span>
+              }
+            </button>
+          </th>
+          <th class="owner-cell" [attr.aria-sort]="sortState('owner')">
+            <button class="sort-control" type="button" (click)="sortBy('owner')">
+              Propietario
+              @if (sortKey() === 'owner') {
+                <span class="sort-direction">{{ sortIcon('owner') }}</span>
+              }
+            </button>
+          </th>
+          <th class="updated-cell" [attr.aria-sort]="sortState('updatedAt')">
+            <button class="sort-control" type="button" (click)="sortBy('updatedAt')">
+              Última edición
+              @if (sortKey() === 'updatedAt') {
+                <span class="sort-direction">{{ sortIcon('updatedAt') }}</span>
+              }
+            </button>
+          </th>
+          <th class="actions-cell">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (project of sortedProjects(); track project.id) {
+          <tr
+            app-project-table-row
+            [project]="project"
+            [selected]="isSelected(project.id)"
+            (selectionChanged)="toggleProject(project.id, $event)"
+          ></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <app-ui-empty-state
+    icon="⌕"
+    title="No encontramos proyectos"
+    description="Prueba con otro término de búsqueda o crea un proyecto nuevo."
+  />
+}

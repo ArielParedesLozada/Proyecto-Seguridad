@@ -10,12 +10,23 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
+        data: { projectView: 'all' },
+        component: ProjectListComponent,
+      },
+      {
+        path: 'my-projects',
+        data: { projectView: 'mine' },
         component: ProjectListComponent,
       },
       {
         path: 'shared',
-        data: { title: 'Compartidos conmigo', description: 'Aquí podrás consultar los proyectos que otras personas compartan contigo.' },
-        component: ComingSoonComponent,
+        data: { projectView: 'shared' },
+        component: ProjectListComponent,
+      },
+      {
+        path: 'archived',
+        data: { projectView: 'archived' },
+        component: ProjectListComponent,
       },
       {
         path: 'templates',

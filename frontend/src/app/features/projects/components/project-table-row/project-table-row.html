@@ -1,0 +1,21 @@
+<td class="select-cell">
+  <input
+    type="checkbox"
+    [attr.aria-label]="'Seleccionar ' + project().title"
+    [checked]="selected()"
+    (change)="selectionChanged.emit($any($event.target).checked)"
+  />
+</td>
+<td class="title-cell">
+  <span class="document-icon"><svg lucideFileText [size]="19"></svg></span>
+  <span
+    ><strong>{{ project().title }}</strong
+    ><small>{{ project().description }}</small></span
+  >
+</td>
+<td class="owner-cell">
+  <span class="avatar">{{ project().ownerInitials }}</span
+  >{{ project().owner }}
+</td>
+<td class="updated-cell">{{ project().updatedAt }}</td>
+<td class="actions-cell"><app-project-action-menu [projectTitle]="project().title" /></td>

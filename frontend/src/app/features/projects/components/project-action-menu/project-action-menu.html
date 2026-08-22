@@ -1,0 +1,31 @@
+<div class="project-actions" [attr.aria-label]="'Acciones para ' + projectTitle()">
+  <app-ui-tooltip text="Duplicar"
+    ><button type="button" aria-label="Duplicar" (click)="actionSelected.emit('duplicate')">
+      <svg lucideCopy [size]="17"></svg></button
+  ></app-ui-tooltip>
+  <app-ui-tooltip text="Descargar proyecto"
+    ><button
+      type="button"
+      aria-label="Descargar proyecto"
+      (click)="actionSelected.emit('download')"
+    >
+      <svg lucideDownload [size]="17"></svg></button
+  ></app-ui-tooltip>
+  <app-ui-tooltip text="Exportar PDF"
+    ><button type="button" aria-label="Exportar PDF" (click)="actionSelected.emit('export-pdf')">
+      <svg lucideFileText [size]="17"></svg></button
+  ></app-ui-tooltip>
+  <app-ui-tooltip text="Archivar"
+    ><button type="button" aria-label="Archivar" (click)="actionSelected.emit('archive')">
+      <svg lucideArchive [size]="17"></svg></button
+  ></app-ui-tooltip>
+  <app-ui-tooltip text="Eliminar"
+    ><button
+      type="button"
+      aria-label="Eliminar"
+      class="danger"
+      (click)="actionSelected.emit('delete')"
+    >
+      <svg lucideTrash2 [size]="17"></svg></button
+  ></app-ui-tooltip>
+</div>
