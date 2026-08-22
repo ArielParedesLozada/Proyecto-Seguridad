@@ -1,0 +1,33 @@
+<main class="editor-shell">
+  <app-editor-toolbar></app-editor-toolbar>
+
+  <section class="editor-content" aria-label="Área de edición del proyecto">
+    <aside class="editor-rail" aria-label="Secciones del proyecto">
+      <button type="button" title="Archivos" aria-label="Archivos"><svg lucideFiles [size]="19"></svg></button>
+      <button type="button" title="Código" aria-label="Código"><svg lucideFileCode2 [size]="19"></svg></button>
+      <button type="button" title="Comentarios" aria-label="Comentarios"><svg lucideMessageSquare [size]="19"></svg></button>
+      <span class="rail-spacer"></span>
+      <button type="button" title="Ayuda" aria-label="Ayuda"><svg lucideHelpCircle [size]="19"></svg></button>
+      <button type="button" title="Configuración" aria-label="Configuración"><svg lucideSettings [size]="19"></svg></button>
+    </aside>
+
+    <app-ui-split-pane class="workspace-panes" firstSize="18rem">
+      <section primary class="files-panel" aria-label="Archivos del proyecto">
+        <div class="panel-label">Archivos del proyecto</div>
+        <div class="panel-placeholder">Panel de archivos</div>
+      </section>
+
+      <app-ui-split-pane secondary class="document-panes" firstSize="50%">
+        <section primary class="editor-panel" aria-label="Editor LaTeX">
+          <div class="panel-label">Editor LaTeX</div>
+          <div class="panel-placeholder">Área del editor LaTeX</div>
+        </section>
+
+        <section secondary class="preview-panel" aria-label="Vista previa PDF">
+          <div class="panel-label">Vista previa PDF</div>
+          <div class="pdf-placeholder">Área del visor PDF</div>
+        </section>
+      </app-ui-split-pane>
+    </app-ui-split-pane>
+  </section>
+</main>

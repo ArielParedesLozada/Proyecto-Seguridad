@@ -1,0 +1,142 @@
+:host {
+  display: block;
+  height: 100dvh;
+}
+
+.editor-shell {
+  display: grid;
+  grid-template-rows: 3.5rem minmax(0, 1fr);
+  height: 100%;
+  overflow: hidden;
+  color: #e2e8f0;
+  background: #1b2430;
+}
+
+.editor-content {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  min-height: 0;
+}
+
+.editor-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.35rem;
+  border-right: 1px solid #334155;
+  background: #17212e;
+}
+
+.editor-rail button {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.4rem;
+  color: #cbd5e1;
+  background: transparent;
+  cursor: default;
+}
+
+.editor-rail button:first-child {
+  color: #ffffff;
+  background: #15803d;
+}
+
+.rail-spacer {
+  flex: 1;
+}
+
+.workspace-panes,
+.document-panes {
+  height: 100%;
+  min-height: 0;
+}
+
+.files-panel,
+.editor-panel,
+.preview-panel {
+  display: grid;
+  grid-template-rows: 2.9rem minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+
+.files-panel {
+  color: #e2e8f0;
+  background: #1f2937;
+}
+
+.editor-panel {
+  color: #334155;
+  background: #f8fafc;
+}
+
+.preview-panel {
+  padding: 0 0.85rem 0.85rem;
+  background: #64748b;
+}
+
+.panel-label {
+  display: flex;
+  align-items: center;
+  padding: 0 0.9rem;
+  border-bottom: 1px solid rgb(148 163 184 / 0.24);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.editor-panel .panel-label {
+  border-bottom-color: #cbd5e1;
+}
+
+.panel-placeholder,
+.pdf-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.pdf-placeholder {
+  margin-top: 0.85rem;
+  color: #64748b;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.2);
+}
+
+@media (max-width: 820px) {
+  .editor-content {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  :host {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .editor-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .editor-content {
+    min-height: calc(100dvh - 3.5rem);
+  }
+
+  .workspace-panes,
+  .document-panes {
+    min-height: 42rem;
+  }
+
+}

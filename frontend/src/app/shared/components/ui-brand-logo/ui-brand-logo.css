@@ -13,7 +13,7 @@
 .compact-brand {
   display: block;
   width: auto;
-  height: 4rem;
+  height: var(--brand-height, 4rem);
 }
 
 .compact-brand {
@@ -24,9 +24,18 @@
   display: none;
 }
 
+:host .brand.is-compact .full-brand {
+  display: none;
+}
+
 :host-context(.sidebar-collapsed) .compact-brand {
   display: block;
-  height: 4rem;
+  height: var(--brand-height, 4rem);
+}
+
+:host .brand.is-compact .compact-brand {
+  display: block;
+  height: var(--brand-height, 4rem);
 }
 
 @media (max-width: 620px) {
