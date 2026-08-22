@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.google-auth-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3rem;
+  gap: 0.6rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.7rem;
+  color: var(--text-color);
+  background: var(--surface-hover);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.google-auth-button:hover {
+  border-color: var(--primary-color);
+  background: var(--highlight-bg);
+}
+
+.google-mark {
+  display: block;
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}

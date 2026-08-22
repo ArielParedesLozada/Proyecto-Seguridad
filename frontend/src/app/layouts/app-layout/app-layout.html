@@ -18,16 +18,17 @@
     >
       <svg lucideX [size]="21"></svg>
     </button>
-    <app-ui-tooltip
-      class="brand-tooltip"
-      text="LatexLab"
-      position="right"
-      [disabled]="sidebarOpen()"
-    >
+    <app-ui-brand-logo
+      link="/projects"
+      ariaLabel="CipherTex, ir a proyectos"
+      (click)="closeMobileMenu()"
+    ></app-ui-brand-logo>
+
+    <nav class="navigation">
       <a
-        class="brand"
-        routerLink="/"
-        aria-label="LatexLab, ir a proyectos"
+        routerLink="/projects"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMobileMenu()"
       >
         <span class="brand-mark"><svg lucideBookOpen [size]="21"></svg></span>

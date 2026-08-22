@@ -2,7 +2,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, PLATFORM_ID, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
-  LucideBookOpen,
   LucideChevronLeft,
   LucideFiles,
   LucideFolderOpen,
@@ -17,6 +16,7 @@ import {
 import { ThemeService } from '../../core/services/theme.service';
 import { UiFooterComponent } from '../../shared/components/ui-footer/ui-footer';
 import { UiTooltipComponent } from '../../shared/components/ui-tooltip/ui-tooltip';
+import { UiBrandLogoComponent } from '../../shared/components/ui-brand-logo/ui-brand-logo';
 @Component({
   selector: 'app-app-layout',
   standalone: true,
@@ -24,7 +24,6 @@ import { UiTooltipComponent } from '../../shared/components/ui-tooltip/ui-toolti
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    LucideBookOpen,
     LucideChevronLeft,
     LucideFiles,
     LucideFolderOpen,
@@ -37,6 +36,7 @@ import { UiTooltipComponent } from '../../shared/components/ui-tooltip/ui-toolti
     LucideX,
     UiFooterComponent,
     UiTooltipComponent,
+    UiBrandLogoComponent,
   ],
   templateUrl: './app-layout.html',
   styleUrl: './app-layout.css',

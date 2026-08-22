@@ -1,0 +1,37 @@
+<main class="register-page">
+  <header class="register-header">
+    <app-ui-brand-logo></app-ui-brand-logo>
+
+    <nav class="account-actions" aria-label="Acciones de cuenta">
+      <a class="top-login-button" routerLink="/login">Iniciar sesión</a>
+    </nav>
+  </header>
+
+  <div class="register-content">
+    <section class="signup-panel" aria-labelledby="signup-title">
+      <h1 id="signup-title" class="code-heading">
+        <span class="command">\begin</span><span class="brace">&#123;</span><span class="argument">anything</span><span class="brace">&#125;</span>
+      </h1>
+
+      <p class="introduction">
+        Escribe como un científico espacial con Overleaf<br />
+        <span>&mdash; el editor LaTeX colaborativo en línea que <em>cualquiera</em> puede usar.</span>
+      </p>
+
+      <div class="provider-actions">
+        <app-google-auth-button label="Regístrate con Google"></app-google-auth-button>
+      </div>
+
+      <p class="legal-notice">
+        Al registrarte, aceptas nuestros <a href="/terms">términos de servicio</a> y
+        <a href="/privacy">aviso de privacidad</a>.
+      </p>
+    </section>
+
+    <app-auth-illustration
+      class="register-visual"
+      src="/images/LogoLatexPrincipal.png"
+      alt="Ilustración de una persona trabajando en LaTeX"
+    ></app-auth-illustration>
+  </div>
+</main>
