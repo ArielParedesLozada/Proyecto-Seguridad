@@ -19,7 +19,7 @@
       <svg lucideX [size]="21"></svg>
     </button>
     <app-ui-brand-logo
-      link="/"
+      link="/projects"
       ariaLabel="ChiperTex, ir a proyectos"
       (click)="closeMobileMenu()"
     />
@@ -28,7 +28,7 @@
       <app-ui-tooltip text="Proyectos" position="right" [disabled]="sidebarOpen()">
         <a
           class="section-link"
-          routerLink="/"
+          routerLink="/projects"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobileMenu()"
@@ -37,23 +37,23 @@
         </a>
       </app-ui-tooltip>
       <div class="project-links">
-        <a routerLink="/my-projects" routerLinkActive="active" (click)="closeMobileMenu()"
+        <a routerLink="/projects/my-projects" routerLinkActive="active" (click)="closeMobileMenu()"
           >Mis proyectos</a
         >
-        <a routerLink="/shared" routerLinkActive="active" (click)="closeMobileMenu()"
+        <a routerLink="/projects/shared" routerLinkActive="active" (click)="closeMobileMenu()"
           >Compartidos conmigo</a
         >
-        <a routerLink="/archived" routerLinkActive="active" (click)="closeMobileMenu()"
+        <a routerLink="/projects/archived" routerLinkActive="active" (click)="closeMobileMenu()"
           >Archivados</a
         >
       </div>
       <app-ui-tooltip text="Plantillas" position="right" [disabled]="sidebarOpen()"
-        ><a class="section-link" routerLink="/templates" (click)="closeMobileMenu()"
+        ><a class="section-link" routerLink="/projects/templates" (click)="closeMobileMenu()"
           ><svg lucideFiles [size]="20"></svg><span>Plantillas</span></a
         ></app-ui-tooltip
       >
       <app-ui-tooltip text="Papelera" position="right" [disabled]="sidebarOpen()"
-        ><a class="section-link" routerLink="/trash" (click)="closeMobileMenu()"
+        ><a class="section-link" routerLink="/projects/trash" (click)="closeMobileMenu()"
           ><svg lucideTrash2 [size]="20"></svg><span>Papelera</span></a
         ></app-ui-tooltip
       >
