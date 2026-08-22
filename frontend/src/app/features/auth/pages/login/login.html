@@ -1,0 +1,24 @@
+<main class="login-page">
+  <header class="login-header">
+    <app-ui-brand-logo></app-ui-brand-logo>
+  </header>
+
+  <div class="login-content">
+    <section class="login-panel" aria-labelledby="login-title">
+      <p class="eyebrow">ACCESO A TU CUENTA</p>
+      <h1 id="login-title">Iniciar sesión</h1>
+      <p class="intro">Continúa trabajando en tus documentos LaTeX.</p>
+
+      <div class="provider-actions">
+        <app-google-auth-button label="Continuar con Google"></app-google-auth-button>
+      </div>
+      <p class="register-prompt">¿Aún no tienes cuenta? <a routerLink="/">Regístrate gratis</a></p>
+    </section>
+
+    <app-auth-illustration
+      class="login-visual"
+      src="/images/LogoLatex.png"
+      alt="Ilustración de un espacio de trabajo LaTeX"
+    ></app-auth-illustration>
+  </div>
+</main>

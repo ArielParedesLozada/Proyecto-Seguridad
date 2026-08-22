@@ -18,37 +18,33 @@
     >
       <svg lucideX [size]="21"></svg>
     </button>
-    <a
-      class="brand"
-      routerLink="/"
-      aria-label="LatexLab, ir a proyectos"
+    <app-ui-brand-logo
+      link="/projects"
+      ariaLabel="CipherTex, ir a proyectos"
       (click)="closeMobileMenu()"
-    >
-      <span class="brand-mark"><svg lucideBookOpen [size]="21"></svg></span>
-      <span class="brand-name">LatexLab</span>
-    </a>
+    ></app-ui-brand-logo>
 
     <nav class="navigation">
       <a
-        routerLink="/"
+        routerLink="/projects"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMobileMenu()"
       >
         <svg lucideFolderOpen [size]="20"></svg><span>Proyectos</span>
       </a>
-      <a routerLink="/shared" (click)="closeMobileMenu()"
+      <a routerLink="/projects/shared" (click)="closeMobileMenu()"
         ><svg lucideShare2 [size]="20"></svg><span>Compartidos conmigo</span></a
       >
-      <a routerLink="/templates" (click)="closeMobileMenu()"
+      <a routerLink="/projects/templates" (click)="closeMobileMenu()"
         ><svg lucideFiles [size]="20"></svg><span>Plantillas</span></a
       >
-      <a routerLink="/trash" (click)="closeMobileMenu()"
+      <a routerLink="/projects/trash" (click)="closeMobileMenu()"
         ><svg lucideTrash2 [size]="20"></svg><span>Papelera</span></a
       >
     </nav>
 
-    <a class="settings-link" routerLink="/settings" (click)="closeMobileMenu()"
+    <a class="settings-link" routerLink="/projects/settings" (click)="closeMobileMenu()"
       ><svg lucideSettings [size]="20"></svg><span>Configuración</span></a
     >
   </aside>

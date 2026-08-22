@@ -1,10 +1,21 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './features/auth/pages/login/login';
+import { RegisterComponent } from './features/auth/pages/register/register';
 import { ProjectListComponent } from './features/projects/pages/project-list/project-list';
 import { ComingSoonComponent } from './features/system/pages/coming-soon/coming-soon';
 import { AppLayoutComponent } from './layouts/app-layout/app-layout';
 export const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
+    component: RegisterComponent,
+  },
+  {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'projects',
     component: AppLayoutComponent,
     children: [
       {
