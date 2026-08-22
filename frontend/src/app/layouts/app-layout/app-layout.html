@@ -31,22 +31,76 @@
         [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMobileMenu()"
       >
-        <svg lucideFolderOpen [size]="20"></svg><span>Proyectos</span>
+        <span class="brand-mark"><svg lucideBookOpen [size]="21"></svg></span>
+        <span class="brand-name">LatexLab</span>
       </a>
-      <a routerLink="/projects/shared" (click)="closeMobileMenu()"
-        ><svg lucideShare2 [size]="20"></svg><span>Compartidos conmigo</span></a
+    </app-ui-tooltip>
+
+    <nav class="navigation">
+      <app-ui-tooltip text="Proyectos" position="right" [disabled]="sidebarOpen()">
+        <a
+          class="section-link"
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobileMenu()"
+        >
+          <svg lucideFolderOpen [size]="20"></svg><span>Proyectos</span>
+        </a>
+      </app-ui-tooltip>
+      <div class="project-links">
+        <a routerLink="/my-projects" routerLinkActive="active" (click)="closeMobileMenu()"
+          >Mis proyectos</a
+        >
+        <a routerLink="/shared" routerLinkActive="active" (click)="closeMobileMenu()"
+          >Compartidos conmigo</a
+        >
+        <a routerLink="/archived" routerLinkActive="active" (click)="closeMobileMenu()"
+          >Archivados</a
+        >
+      </div>
+      <app-ui-tooltip text="Plantillas" position="right" [disabled]="sidebarOpen()"
+        ><a class="section-link" routerLink="/templates" (click)="closeMobileMenu()"
+          ><svg lucideFiles [size]="20"></svg><span>Plantillas</span></a
+        ></app-ui-tooltip
       >
-      <a routerLink="/projects/templates" (click)="closeMobileMenu()"
-        ><svg lucideFiles [size]="20"></svg><span>Plantillas</span></a
-      >
-      <a routerLink="/projects/trash" (click)="closeMobileMenu()"
-        ><svg lucideTrash2 [size]="20"></svg><span>Papelera</span></a
+      <app-ui-tooltip text="Papelera" position="right" [disabled]="sidebarOpen()"
+        ><a class="section-link" routerLink="/trash" (click)="closeMobileMenu()"
+          ><svg lucideTrash2 [size]="20"></svg><span>Papelera</span></a
+        ></app-ui-tooltip
       >
     </nav>
 
-    <a class="settings-link" routerLink="/projects/settings" (click)="closeMobileMenu()"
-      ><svg lucideSettings [size]="20"></svg><span>Configuración</span></a
+    <app-ui-tooltip
+      class="settings-tooltip"
+      text="Configuración"
+      position="right"
+      [disabled]="sidebarOpen()"
     >
+      <button
+        class="settings-link section-link"
+        type="button"
+        [attr.aria-expanded]="settingsMenuOpen()"
+        aria-controls="settings-menu"
+        (click)="toggleSettingsMenu()"
+      >
+        <svg lucideSettings [size]="20"></svg><span>Configuración</span>
+      </button>
+    </app-ui-tooltip>
+    @if (settingsMenuOpen()) {
+      <section id="settings-menu" class="settings-menu" aria-label="Configuración rápida">
+        <button class="menu-action" type="button" (click)="theme.toggle()">
+          @if (theme.darkMode()) {
+            <svg lucideSun [size]="18"></svg><span>Tema claro</span>
+          } @else {
+            <svg lucideMoon [size]="18"></svg><span>Tema oscuro</span>
+          }
+        </button>
+        <button class="menu-action logout-action" type="button" (click)="logout()">
+          <svg lucideLogOut [size]="18"></svg><span>Cerrar sesión</span>
+        </button>
+      </section>
+    }
   </aside>
 
   <div class="content-shell">
@@ -64,16 +118,25 @@
         }
       </button>
       <div class="topbar-actions">
-        <button class="theme-control" type="button" (click)="theme.toggle()">
-          @if (theme.darkMode()) {
-            <svg lucideSun [size]="18"></svg><span>Claro</span>
-          } @else {
-            <svg lucideMoon [size]="18"></svg><span>Oscuro</span>
+        <div class="profile-wrapper">
+          <button
+            class="profile"
+            type="button"
+            aria-label="Abrir menú de Diego"
+            [attr.aria-expanded]="profileMenuOpen()"
+            aria-controls="profile-menu"
+            (click)="toggleProfileMenu()"
+          >
+            <span>DS</span><strong>Diego</strong>
+          </button>
+          @if (profileMenuOpen()) {
+            <section id="profile-menu" class="profile-menu" aria-label="Menú de usuario">
+              <button class="menu-action logout-action" type="button" (click)="logout()">
+                <svg lucideLogOut [size]="18"></svg><span>Cerrar sesión</span>
+              </button>
+            </section>
           }
-        </button>
-        <button class="profile" type="button" aria-label="Abrir menú de Diego">
-          <span>DS</span><strong>Diego</strong>
-        </button>
+        </div>
       </div>
     </header>
     <main class="page-content"><router-outlet /></main>

@@ -7,14 +7,15 @@ import {
   LucideFolderOpen,
   LucideMenu,
   LucideMoon,
+  LucideLogOut,
   LucideSettings,
-  LucideShare2,
   LucideSun,
   LucideTrash2,
   LucideX,
 } from '@lucide/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { UiFooterComponent } from '../../shared/components/ui-footer/ui-footer';
+import { UiTooltipComponent } from '../../shared/components/ui-tooltip/ui-tooltip';
 import { UiBrandLogoComponent } from '../../shared/components/ui-brand-logo/ui-brand-logo';
 @Component({
   selector: 'app-app-layout',
@@ -28,12 +29,13 @@ import { UiBrandLogoComponent } from '../../shared/components/ui-brand-logo/ui-b
     LucideFolderOpen,
     LucideMenu,
     LucideMoon,
+    LucideLogOut,
     LucideSettings,
-    LucideShare2,
     LucideSun,
     LucideTrash2,
     LucideX,
     UiFooterComponent,
+    UiTooltipComponent,
     UiBrandLogoComponent,
   ],
   templateUrl: './app-layout.html',
@@ -44,6 +46,8 @@ export class AppLayoutComponent {
   private readonly platformId = inject(PLATFORM_ID);
   readonly sidebarOpen = signal(true);
   readonly mobileMenuOpen = signal(false);
+  readonly settingsMenuOpen = signal(false);
+  readonly profileMenuOpen = signal(false);
 
   toggleSidebar(): void {
     if (isPlatformBrowser(this.platformId) && window.matchMedia('(max-width: 760px)').matches) {
@@ -55,5 +59,20 @@ export class AppLayoutComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+  }
+
+  toggleSettingsMenu(): void {
+    this.settingsMenuOpen.update((isOpen) => !isOpen);
+    this.profileMenuOpen.set(false);
+  }
+
+  toggleProfileMenu(): void {
+    this.profileMenuOpen.update((isOpen) => !isOpen);
+    this.settingsMenuOpen.set(false);
+  }
+
+  logout(): void {
+    this.settingsMenuOpen.set(false);
+    this.profileMenuOpen.set(false);
   }
 }

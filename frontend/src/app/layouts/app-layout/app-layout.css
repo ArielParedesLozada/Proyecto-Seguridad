@@ -1,14 +1,11 @@
 :host {
   display: block;
   min-height: 100dvh;
-  --layout-sidebar-background: var(--surface-card);
-}
-:host-context(.app-dark) {
-  --layout-sidebar-background: var(--surface-card);
+  --layout-sidebar-background: var(--surface-ground);
 }
 .application-shell {
   display: grid;
-  grid-template-columns: 18rem minmax(0, 1fr);
+  grid-template-columns: 14rem minmax(0, 1fr);
   height: 100dvh;
   background: var(--surface-ground);
   overflow: hidden;
@@ -25,12 +22,12 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 1.5rem 1rem;
-  border-right: 1px solid var(--surface-border);
+  padding: 1.5rem 0.85rem;
+  border-right: 0;
   background: var(--layout-sidebar-background);
   height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
+  z-index: 5;
 }
 .navigation a,
 .settings-link {
@@ -39,6 +36,7 @@
   gap: 0.85rem;
   min-width: max-content;
   color: var(--text-color);
+  font: inherit;
   text-decoration: none;
 }
 app-ui-brand-logo {
@@ -49,12 +47,45 @@ app-ui-brand-logo {
   display: grid;
   gap: 0.35rem;
 }
+.brand-tooltip {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+}
+.navigation app-ui-tooltip,
+.settings-tooltip {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+.project-links {
+  display: grid;
+  gap: 0.15rem;
+  margin: -0.1rem 0.3rem 0.35rem 2.35rem;
+}
+.project-links a {
+  display: block;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.45rem;
+  color: var(--text-color-secondary);
+  font-size: 0.88rem;
+  font-weight: 550;
+  text-decoration: none;
+}
+.project-links a:hover,
+.project-links a.active {
+  color: var(--primary-color);
+  background: var(--highlight-bg);
+}
 .navigation a,
 .settings-link {
+  border: 0;
   padding: 0.75rem 0.8rem;
   border-radius: 0.65rem;
   color: var(--text-color-secondary);
   font-weight: 550;
+  text-align: left;
+  cursor: pointer;
 }
 .navigation a:hover,
 .navigation a.active,
@@ -62,26 +93,106 @@ app-ui-brand-logo {
   background: var(--highlight-bg);
   color: var(--primary-color);
 }
+.navigation .section-link,
+.settings-link.section-link {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+.navigation .section-link svg,
+.navigation .section-link span,
+.settings-link.section-link svg,
+.settings-link.section-link span {
+  position: relative;
+  z-index: 1;
+}
+.navigation .section-link::before,
+.settings-link.section-link::before {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0.3rem;
+  bottom: 0;
+  left: 0.45rem;
+  border-radius: 0.45rem;
+  background: transparent;
+  content: '';
+}
+.navigation .section-link:hover,
+.navigation .section-link.active,
+.settings-link.section-link:hover {
+  background: transparent;
+  color: var(--primary-color);
+}
+.navigation .section-link:hover::before,
+.navigation .section-link.active::before,
+.settings-link.section-link:hover::before {
+  background: var(--highlight-bg);
+}
 .settings-link {
+  margin-top: 0;
+  width: 100%;
+}
+.settings-tooltip {
   margin-top: auto;
+}
+.settings-menu,
+.profile-menu {
+  z-index: 20;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.35rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.7rem;
+  background: var(--surface-card);
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.2);
+}
+.settings-menu {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 4.75rem;
+  left: 0.85rem;
+}
+.menu-action {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  border: 0;
+  border-radius: 0.45rem;
+  padding: 0.65rem 0.7rem;
+  color: var(--text-color);
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.menu-action:hover {
+  background: var(--surface-hover);
+}
+.logout-action:hover {
+  color: var(--color-danger);
 }
 .content-shell {
   min-width: 0;
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
+  padding: 0;
 }
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 5.5rem;
+  min-height: 5rem;
   padding: 1rem clamp(1.25rem, 3vw, 3rem);
-  border-bottom: 1px solid var(--surface-border);
-  background: color-mix(in srgb, var(--surface-card) 92%, transparent);
+  border: 0;
+  background: transparent;
 }
 .icon-control,
-.theme-control,
 .profile {
   border: 0;
   background: transparent;
@@ -96,20 +207,14 @@ app-ui-brand-logo {
   border-radius: 0.65rem;
 }
 .icon-control:hover,
-.theme-control:hover {
+.profile:hover {
   background: var(--surface-hover);
 }
 .topbar-actions,
-.theme-control,
 .profile {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-}
-.theme-control {
-  padding: 0.6rem 0.75rem;
-  border-radius: 0.6rem;
-  color: var(--text-color-secondary);
 }
 .profile {
   padding: 0.25rem 0.4rem;
@@ -130,13 +235,29 @@ app-ui-brand-logo {
 .profile strong {
   font-weight: 600;
 }
+.profile-wrapper {
+  position: relative;
+}
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 11.5rem;
+}
 .page-content {
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
+  border-radius: 1.35rem 0 0 0;
+  background: var(--surface-card);
 }
+.mobile-close {
+  display: none;
+}
+.sidebar-collapsed .brand-name,
 .mobile-close { display: none; }
 .sidebar-collapsed .navigation span,
+.sidebar-collapsed .project-links,
 .sidebar-collapsed .settings-link span {
   display: none;
 }
@@ -149,6 +270,23 @@ app-ui-brand-logo {
   justify-content: center;
   padding-inline: 0.45rem;
 }
+.sidebar-collapsed .settings-link {
+  width: auto;
+}
+.sidebar-collapsed .navigation app-ui-tooltip,
+.sidebar-collapsed .settings-tooltip {
+  width: auto;
+}
+.sidebar-collapsed .navigation .section-link::before,
+.sidebar-collapsed .settings-link.section-link::before {
+  right: 0;
+  left: 0;
+}
+.sidebar-collapsed .settings-menu {
+  right: auto;
+  bottom: 1rem;
+  left: calc(100% + 0.6rem);
+  width: 12rem;
 .sidebar-collapsed app-ui-brand-logo {
   width: 4rem;
   padding: 0;
@@ -165,31 +303,35 @@ app-ui-brand-logo {
     top: 0;
     bottom: 0;
     left: 0;
-    width: min(18rem, 82vw);
+    width: min(14rem, 82vw);
     height: 100dvh;
     transform: translateX(-105%);
     transition: transform 0.22s ease;
     box-shadow: 12px 0 30px rgb(15 23 42 / 0.16);
     isolation: isolate;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
   .mobile-sidebar-open .sidebar {
     transform: translateX(0);
   }
   .mobile-close {
     position: absolute;
-    top: .85rem;
-    right: .85rem;
+    top: 0.85rem;
+    right: 0.85rem;
     display: grid;
     place-items: center;
     width: 2.3rem;
     height: 2.3rem;
     border: 0;
-    border-radius: .6rem;
+    border-radius: 0.6rem;
     color: var(--text-color-secondary);
     background: transparent;
     cursor: pointer;
   }
-  .mobile-close:hover { background: var(--surface-hover); }
+  .mobile-close:hover {
+    background: var(--surface-hover);
+  }
   .sidebar-backdrop {
     position: fixed;
     z-index: 10;
@@ -205,8 +347,10 @@ app-ui-brand-logo {
   .topbar {
     min-height: 4.75rem;
   }
-  .profile strong,
-  .theme-control span {
+  .page-content {
+    border-radius: 0;
+  }
+  .profile strong {
     display: none;
   }
 }

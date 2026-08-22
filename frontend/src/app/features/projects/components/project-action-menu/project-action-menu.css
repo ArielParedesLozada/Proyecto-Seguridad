@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+.project-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.2rem;
+}
+button {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.45rem;
+  color: var(--text-color-secondary);
+  background: transparent;
+  cursor: pointer;
+}
+button:hover {
+  color: var(--primary-color);
+  background: var(--surface-hover);
+}
+button.danger:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
