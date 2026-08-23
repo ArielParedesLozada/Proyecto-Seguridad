@@ -50,8 +50,14 @@
 }
 
 .preview-panel {
-  padding: 0 0.85rem 0.85rem;
-  background: #64748b;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  padding: 0;
+  background: var(--preview-ground);
+}
+
+.preview-panel app-editor-pdf-preview {
+  height: 100%;
 }
 
 .panel-label {

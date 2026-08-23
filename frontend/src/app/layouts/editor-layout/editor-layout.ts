@@ -3,6 +3,7 @@ import { EditorSidebarComponent } from '../../features/editor/components/editor-
 import { EditorSidePanelComponent } from '../../features/editor/components/editor-side-panel/editor-side-panel';
 import { EditorToolbarComponent } from '../../features/editor/components/editor-toolbar/editor-toolbar';
 import { EditorWorkspaceComponent } from '../../features/editor/components/editor-workspace/editor-workspace';
+import { EditorPdfPreviewComponent } from '../../features/editor/components/editor-pdf-preview/editor-pdf-preview';
 import { EditorSidebarOption } from '../../features/editor/models/editor-sidebar-option.type';
 import { EditorComment } from '../../features/editor/models/editor-comment.interface';
 import { UiSplitPaneComponent } from '../../shared/components/ui-split-pane/ui-split-pane';
@@ -15,6 +16,7 @@ import { UiSplitPaneComponent } from '../../shared/components/ui-split-pane/ui-s
     EditorSidePanelComponent,
     EditorToolbarComponent,
     EditorWorkspaceComponent,
+    EditorPdfPreviewComponent,
     UiSplitPaneComponent,
   ],
   templateUrl: './editor-layout.html',
