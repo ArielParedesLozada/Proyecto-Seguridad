@@ -4,6 +4,7 @@
   (visibleChange)="visible.set($event)"
   [modal]="true"
   [draggable]="false"
+  [appendTo]="'body'"
   [style]="{ width: width(), maxWidth: 'calc(100vw - 2rem)' }"
   ><ng-content
 /></p-dialog>

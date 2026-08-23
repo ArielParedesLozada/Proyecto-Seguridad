@@ -3,5 +3,9 @@
   [class.tip-right]="position() === 'right'"
   [class.tip-disabled]="disabled()"
   [class.tip-focus-disabled]="!showOnFocus()"
-  ><ng-content /><small>{{ text() }}</small></span
+  (mouseenter)="show()"
+  (mouseleave)="hide()"
+  (focusin)="showFromFocus()"
+  (focusout)="hide()"
+  ><ng-content /></span
 >

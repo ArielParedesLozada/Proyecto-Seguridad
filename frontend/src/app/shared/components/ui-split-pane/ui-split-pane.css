@@ -18,7 +18,7 @@
 .split.is-vertical.is-collapsed {
   grid-template-rows: 0 0.4rem minmax(0, 1fr);
 }
-.split.is-collapsed .first {
+.split.is-collapsed > .first {
   visibility: hidden;
 }
 .first,

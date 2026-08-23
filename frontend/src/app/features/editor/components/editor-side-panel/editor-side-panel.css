@@ -196,6 +196,11 @@ h2 {
   background: var(--surface-hover);
 }
 
+.file-row.is-active {
+  color: var(--primary-color);
+  background: var(--highlight-bg);
+}
+
 .outline-item {
   display: block;
   padding: 0.45rem 0.85rem 0.45rem 1.55rem;

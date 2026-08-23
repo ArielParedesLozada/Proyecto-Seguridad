@@ -29,14 +29,22 @@
   width: 0.35rem;
   height: 0.35rem;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--color-warning);
 }
 .tab b {
   margin-left: auto;
   color: inherit;
   font-size: 1rem;
   font-weight: 400;
+  cursor: pointer;
 }
 .tab b:hover {
-  color: #dc2626;
+  color: var(--color-danger);
+}
+.tab b.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.tab b.is-disabled:hover {
+  color: inherit;
 }

@@ -1,1 +1,1 @@
-export type EditorSidebarOption = 'files' | 'search';
+export type EditorSidebarOption = 'files' | 'search' | 'comments';

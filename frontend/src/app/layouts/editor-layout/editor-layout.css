@@ -43,8 +43,10 @@
 }
 
 .editor-panel {
-  color: #334155;
-  background: #f8fafc;
+  display: block;
+  overflow: hidden;
+  color: var(--text-color);
+  background: var(--surface-card);
 }
 
 .preview-panel {

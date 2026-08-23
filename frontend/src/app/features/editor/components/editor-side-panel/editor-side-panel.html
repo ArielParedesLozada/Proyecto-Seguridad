@@ -1,7 +1,7 @@
 <aside
   class="editor-side-panel"
   [class.is-files]="view() === 'files'"
-  [attr.aria-label]="view() === 'files' ? 'Árbol de archivos' : 'Buscar en el proyecto'"
+  [attr.aria-label]="view() === 'files' ? 'Árbol de archivos' : view() === 'search' ? 'Buscar en el proyecto' : 'Comentarios'"
 >
   @if (view() === 'files') {
     <app-ui-split-pane
@@ -34,7 +34,12 @@
       </header>
 
         @for (entry of projectEntries(); track entry.name) {
-          <button class="file-row" type="button">
+          <button
+            class="file-row"
+            type="button"
+            [class.is-active]="entry.type === 'file' && entry.name === activeFile()"
+            (click)="entry.type === 'file' && fileSelected.emit(entry.name)"
+          >
             @if (entry.type === 'file') {
               <svg lucideFileCode2 [size]="17"></svg>
             } @else {
@@ -52,7 +57,7 @@
       <span class="outline-item">Introducción</span>
       </section>
     </app-ui-split-pane>
-  } @else {
+  } @else if (view() === 'search') {
     <section class="search-section">
       <header class="panel-header">
         <h2>Buscar en el proyecto</h2>
@@ -105,6 +110,13 @@
         </app-ui-tooltip>
       </div>
     </section>
+  } @else {
+    <app-editor-comments-view
+      [comments]="comments()"
+      [focusRequest]="commentFocusRequest()"
+      (closed)="closed.emit()"
+      (commentAdded)="commentAdded.emit($event)"
+    ></app-editor-comments-view>
   }
 </aside>
 

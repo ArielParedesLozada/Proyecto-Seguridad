@@ -1,0 +1,73 @@
+<section class="visual-editor" aria-label="Vista visual del documento">
+  <article class="visual-document">
+    @for (block of blocks(); track $index) {
+      @switch (block.kind) {
+        @case ('title') {
+          <h1>
+            @for (segment of block.segments; track $index) {
+              <span [class.is-bold]="segment.bold" [class.is-italic]="segment.italic">{{
+                segment.text
+              }}</span>
+            }
+          </h1>
+        }
+        @case ('author') {
+          <p class="document-author">
+            @for (segment of block.segments; track $index) {
+              <span [class.is-bold]="segment.bold" [class.is-italic]="segment.italic">{{
+                segment.text
+              }}</span>
+            }
+          </p>
+        }
+        @case ('section') {
+          <h2>
+            @for (segment of block.segments; track $index) {
+              <span [class.is-bold]="segment.bold" [class.is-italic]="segment.italic">{{
+                segment.text
+              }}</span>
+            }
+          </h2>
+        }
+        @case ('paragraph') {
+          <p>
+            @for (segment of block.segments; track $index) {
+              <span [class.is-bold]="segment.bold" [class.is-italic]="segment.italic">{{
+                segment.text
+              }}</span>
+            }
+          </p>
+        }
+        @case ('list') {
+          @if (block.ordered) {
+            <ol>
+              @for (item of block.items; track $index) {
+                <li>
+                  @for (segment of item; track $index) {
+                    <span [class.is-bold]="segment.bold" [class.is-italic]="segment.italic">{{
+                      segment.text
+                    }}</span>
+                  }
+                </li>
+              }
+            </ol>
+          } @else {
+            <ul>
+              @for (item of block.items; track $index) {
+                <li>
+                  @for (segment of item; track $index) {
+                    <span [class.is-bold]="segment.bold" [class.is-italic]="segment.italic">{{
+                      segment.text
+                    }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        }
+      }
+    } @empty {
+      <p class="empty-visual-document">No hay contenido visual para mostrar.</p>
+    }
+  </article>
+</section>

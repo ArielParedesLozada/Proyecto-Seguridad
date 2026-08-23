@@ -14,6 +14,8 @@ import { UiModalComponent } from '../../../../shared/components/ui-modal/ui-moda
 import { UiSearchInputComponent } from '../../../../shared/components/ui-search-input/ui-search-input';
 import { UiSplitPaneComponent } from '../../../../shared/components/ui-split-pane/ui-split-pane';
 import { UiTooltipComponent } from '../../../../shared/components/ui-tooltip/ui-tooltip';
+import { EditorCommentsViewComponent } from '../editor-comments-view/editor-comments-view';
+import { EditorComment } from '../../models/editor-comment.interface';
 import { EditorSidebarOption } from '../../models/editor-sidebar-option.type';
 
 type SearchOption = 'caseSensitive' | 'regularExpression' | 'wholeWord';
@@ -38,13 +40,19 @@ type ProjectEntry = { name: string; type: 'file' | 'folder' };
     UiSearchInputComponent,
     UiSplitPaneComponent,
     UiTooltipComponent,
+    EditorCommentsViewComponent,
   ],
   templateUrl: './editor-side-panel.html',
   styleUrl: './editor-side-panel.css',
 })
 export class EditorSidePanelComponent {
   readonly view = input<EditorSidebarOption>('files');
+  readonly activeFile = input<string | null>(null);
+  readonly comments = input<EditorComment[]>([]);
+  readonly commentFocusRequest = input(0);
   readonly closed = output<void>();
+  readonly fileSelected = output<string>();
+  readonly commentAdded = output<string>();
   readonly searchQuery = signal('');
   readonly activeModal = signal<ActiveModal>(null);
   readonly fileDialogMode = signal<FileDialogMode>('new');
@@ -105,4 +113,5 @@ export class EditorSidePanelComponent {
   selectUpload(file: File | undefined): void {
     this.selectedUploadName.set(file?.name ?? '');
   }
+
 }

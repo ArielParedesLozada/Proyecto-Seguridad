@@ -22,4 +22,16 @@
       <svg lucideSearch [size]="19"></svg>
     </button>
   </app-ui-tooltip>
+
+  <app-ui-tooltip text="Comentarios" position="right" [showOnFocus]="false">
+    <button
+      type="button"
+      aria-label="Comentarios"
+      [attr.aria-pressed]="activeOption() === 'comments'"
+      [class.is-active]="activeOption() === 'comments'"
+      (click)="selectOption('comments')"
+    >
+      <svg lucideMessageSquare [size]="19"></svg>
+    </button>
+  </app-ui-tooltip>
 </aside>
