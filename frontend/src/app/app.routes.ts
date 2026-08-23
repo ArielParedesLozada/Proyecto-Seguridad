@@ -4,6 +4,7 @@ import { RegisterComponent } from './features/auth/pages/register/register';
 import { ProjectListComponent } from './features/projects/pages/project-list/project-list';
 import { ComingSoonComponent } from './features/system/pages/coming-soon/coming-soon';
 import { AppLayoutComponent } from './layouts/app-layout/app-layout';
+import { authGuard } from './core/auth/auth.guard';
 export const routes: Routes = [
   {
     path: '',
@@ -17,6 +18,7 @@ export const routes: Routes = [
   {
     path: 'projects',
     component: AppLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',

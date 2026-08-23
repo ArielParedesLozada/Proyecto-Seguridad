@@ -110,12 +110,14 @@
           <button
             class="profile"
             type="button"
-            aria-label="Abrir menú de Diego"
+            [attr.aria-label]="'Abrir menú de ' + (auth.currentUser()?.nombre || 'usuario')"
             [attr.aria-expanded]="profileMenuOpen()"
             aria-controls="profile-menu"
             (click)="toggleProfileMenu()"
           >
-            <span>DS</span><strong>Diego</strong>
+            <span>{{ auth.userInitials() }}</span><strong>{{
+              auth.currentUser()?.nombre || 'Usuario'
+            }}</strong>
           </button>
           @if (profileMenuOpen()) {
             <section id="profile-menu" class="profile-menu" aria-label="Menú de usuario">
