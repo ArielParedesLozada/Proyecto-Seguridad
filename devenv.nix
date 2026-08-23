@@ -4,17 +4,12 @@
   config,
   inputs,
   ...
-}: let
-  dotnetCombined = pkgs.dotnetCorePackages.combinePackages [
-    pkgs.dotnetCorePackages.sdk_8_0
-    #pkgs.dotnetCorePackages.sdk_10_0
-  ];
-in {
+}: {
   env.name = "overleaf";
 
   languages.dotnet = {
     enable = true;
-    package = dotnetCombined;
+    package = pkgs.dotnetCorePackages.sdk_8_0;
     lsp.enable = true;
   };
 
@@ -22,6 +17,9 @@ in {
     nodejs
     pnpm
     dotnet-ef
+    chromium
+    fontconfig
+    freetype
   ];
 
   # env.DOTNET_ROOT = "${dotnetCombined}";
@@ -29,7 +27,39 @@ in {
     icu
     openssl
     stdenv.cc.cc.lib
+    
+    glib
+    nss
+    nspr
+    atk
+    at-spi2-atk
+    cups
+    dbus
+    expat
+    libdrm
+    libxkbcommon
+    libgbm
+    mesa
+    xorg.libX11
+    xorg.libXcomposite
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXfixes
+    xorg.libXrandr
+    xorg.libxcb
+    pango
+    cairo
+    alsa-lib
+    udev
   ]);
+  env.CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium";
+  env.FONTCONFIG_FILE = pkgs.makeFontsConf {
+    fontDirectories = with pkgs; [
+      dejavu_fonts
+      liberation_ttf
+      noto-fonts
+    ];
+  };
 
   enterShell = ''
     export PATH="$PWD/frontend/node_modules/.bin:$PATH"
