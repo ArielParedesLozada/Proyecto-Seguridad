@@ -1,3 +1,5 @@
-<button class="google-auth-button" type="button" (click)="selected.emit()">
-  <img class="google-mark" src="/images/LogoGoogle.png" alt="" aria-hidden="true" />{{ label() }}
-</button>
+<a class="google-auth-link" [href]="googleLoginUrl">
+  <button class="google-auth-button" type="button" (click)="selected.emit()">
+    <img class="google-mark" src="/images/LogoGoogle.png" alt="" aria-hidden="true" />{{ label() }}
+  </button>
+</a>
