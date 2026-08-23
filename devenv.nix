@@ -18,48 +18,49 @@
     pnpm
     dotnet-ef
     chromium
-    fontconfig
-    freetype
+    # Font
+    # fontconfig
+    # freetype
   ];
 
-  # env.DOTNET_ROOT = "${dotnetCombined}";
   env.NIX_LD_LIBRARY_PATH = lib.makeLibraryPath (with pkgs; [
+    # .NET Linter
     icu
     openssl
     stdenv.cc.cc.lib
-    
-    glib
-    nss
-    nspr
-    atk
-    at-spi2-atk
-    cups
-    dbus
-    expat
-    libdrm
-    libxkbcommon
-    libgbm
-    mesa
-    xorg.libX11
-    xorg.libXcomposite
-    xorg.libXdamage
-    xorg.libXext
-    xorg.libXfixes
-    xorg.libXrandr
-    xorg.libxcb
-    pango
-    cairo
-    alsa-lib
-    udev
+    # Chromium
+    # glib
+    # nss
+    # nspr
+    # atk
+    # at-spi2-atk
+    # cups
+    # dbus
+    # expat
+    # libdrm
+    # libxkbcommon
+    # libgbm
+    # mesa
+    # xorg.libX11
+    # xorg.libXcomposite
+    # xorg.libXdamage
+    # xorg.libXext
+    # xorg.libXfixes
+    # xorg.libXrandr
+    # xorg.libxcb
+    # pango
+    # cairo
+    # alsa-lib
+    # udev
   ]);
   env.CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium";
-  env.FONTCONFIG_FILE = pkgs.makeFontsConf {
-    fontDirectories = with pkgs; [
-      dejavu_fonts
-      liberation_ttf
-      noto-fonts
-    ];
-  };
+  # env.FONTCONFIG_FILE = pkgs.makeFontsConf {
+  #   fontDirectories = with pkgs; [
+  #     dejavu_fonts
+  #     liberation_ttf
+  #     noto-fonts
+  #   ];
+  # };
 
   enterShell = ''
     export PATH="$PWD/frontend/node_modules/.bin:$PATH"
