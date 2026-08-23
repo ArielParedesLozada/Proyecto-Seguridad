@@ -1,0 +1,96 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.visual-editor {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  overflow-x: hidden;
+  padding: 1.5rem;
+  background: var(--surface-ground);
+}
+
+.visual-document {
+  width: 100%;
+  min-width: 0;
+  max-width: 48rem;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  box-shadow: var(--overlay-shadow);
+  color: var(--text-color);
+  font-family: ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+  font-size: 0.97rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.visual-document h1,
+.visual-document h2 {
+  color: var(--text-color);
+  line-height: 1.25;
+}
+
+.visual-document h1 {
+  margin: 0 0 0.35rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.document-author {
+  margin: 0 0 2.75rem;
+  color: var(--text-color-secondary);
+  text-align: center;
+}
+
+.visual-document h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.35rem;
+}
+
+.visual-document p {
+  margin: 0.75rem 0;
+}
+
+.visual-document ul,
+.visual-document ol {
+  margin: 0.85rem 0;
+  padding-left: 1.45rem;
+}
+
+.visual-document li + li {
+  margin-top: 0.35rem;
+}
+
+.is-bold {
+  font-weight: 700;
+}
+
+.is-italic {
+  font-style: italic;
+}
+
+.empty-visual-document {
+  color: var(--text-color-secondary);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .visual-editor {
+    padding: 0.75rem;
+  }
+
+  .visual-document {
+    padding: 1.25rem;
+  }
+
+  .visual-document h1 {
+    font-size: 1.6rem;
+  }
+}

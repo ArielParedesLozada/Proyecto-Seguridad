@@ -1,0 +1,58 @@
+<main class="editor-shell">
+  <app-editor-toolbar></app-editor-toolbar>
+
+  <section class="editor-content" aria-label="Área de edición del proyecto">
+    <app-editor-sidebar
+      [activeOption]="activeSidebarOption()"
+      (optionSelected)="toggleSidePanelFromSidebar($event)"
+    ></app-editor-sidebar>
+
+    <app-ui-split-pane
+      class="workspace-panes"
+      firstSize="18rem"
+      [collapsed]="!isSidePanelVisible()"
+      [firstScrollable]="false"
+      [resizable]="true"
+      [collapsible]="true"
+      minFirst="14rem"
+      maxFirst="32rem"
+      minSecond="20rem"
+      (collapseToggled)="toggleSidePanel()"
+    >
+      <section primary class="files-panel" aria-label="Archivos del proyecto">
+        <app-editor-side-panel
+          [view]="activeSidebarOption()"
+          [activeFile]="activeEditorFile()"
+          [comments]="comments()"
+          [commentFocusRequest]="commentFocusRequest()"
+          (closed)="isSidePanelVisible.set(false)"
+          (fileSelected)="selectEditorFile($event)"
+          (commentAdded)="addComment($event)"
+        ></app-editor-side-panel>
+      </section>
+
+      <app-ui-split-pane
+        secondary
+        class="document-panes"
+        firstSize="50%"
+        [firstScrollable]="false"
+        [resizable]="true"
+        minFirst="22rem"
+        maxFirst="70%"
+        minSecond="18rem"
+      >
+        <section primary class="editor-panel" aria-label="Editor LaTeX">
+          <app-editor-workspace
+            [selectedFile]="activeEditorFile()"
+            (activeFileChanged)="updateActiveEditorFile($event)"
+            (commentRequested)="openCommentsPanel()"
+          ></app-editor-workspace>
+        </section>
+
+        <section secondary class="preview-panel" aria-label="Vista previa PDF">
+          <app-editor-pdf-preview></app-editor-pdf-preview>
+        </section>
+      </app-ui-split-pane>
+    </app-ui-split-pane>
+  </section>
+</main>

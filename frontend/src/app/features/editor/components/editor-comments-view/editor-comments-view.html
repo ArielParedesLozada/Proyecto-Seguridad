@@ -1,0 +1,54 @@
+<section class="comments-view" aria-label="Comentarios">
+  <header class="panel-header">
+    <h2>Comentarios</h2>
+    <app-ui-tooltip text="Cerrar panel" position="right" [showOnFocus]="false">
+      <button type="button" aria-label="Cerrar panel" (click)="closed.emit()">
+        <svg lucideX [size]="17"></svg>
+      </button>
+    </app-ui-tooltip>
+  </header>
+
+  <div class="comment-composer">
+    <textarea
+      #commentInput
+      aria-label="Escribe un comentario o menciona a alguien"
+      placeholder="Escribe un comentario o menciona a alguien"
+      [value]="draft()"
+      (input)="draft.set($any($event.target).value)"
+    ></textarea>
+    <div class="comment-actions">
+      <app-ui-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (pressed)="cancel()"
+      ></app-ui-button>
+      <app-ui-button
+        label="Comentar"
+        [disabled]="!draft().trim()"
+        (pressed)="submit()"
+      ></app-ui-button>
+    </div>
+  </div>
+
+  <div class="comments-content">
+    @if (comments().length) {
+      @for (comment of comments(); track comment.id) {
+        <article class="comment-item">
+          <header>
+            <strong>{{ comment.author }}</strong
+            ><time>{{ comment.createdAt }}</time>
+          </header>
+          <p>{{ comment.content }}</p>
+        </article>
+      }
+    } @else {
+      <app-ui-empty-state
+        title="No hay comentarios ni sugerencias"
+        description="Todavía no se han agregado comentarios o sugerencias."
+      >
+        <svg empty-state-icon lucideMessageSquare [size]="27"></svg>
+      </app-ui-empty-state>
+    }
+  </div>
+</section>

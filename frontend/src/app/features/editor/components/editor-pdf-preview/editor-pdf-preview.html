@@ -1,0 +1,140 @@
+<section class="pdf-preview" [class.is-presentation]="presentationMode()" aria-label="Vista previa PDF">
+  <header class="pdf-toolbar">
+    <div class="compile-control">
+      <button class="recompile-button" type="button" (click)="recompile()">Recompilar</button>
+      <button
+        class="compile-menu-toggle"
+        type="button"
+        aria-label="Opciones de compilación"
+        [attr.aria-expanded]="recompileMenuOpen()"
+        (click)="toggleRecompileMenu()"
+      >
+        <svg lucideChevronDown [size]="16"></svg>
+      </button>
+
+      @if (recompileMenuOpen()) {
+        <div class="pdf-menu compile-menu" role="menu" aria-label="Opciones de compilación">
+          <p class="menu-heading">Compilación automática</p>
+          <button type="button" [class.is-selected]="automaticCompilation()" (click)="automaticCompilation.set(true)">
+            Activada @if (automaticCompilation()) { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <button type="button" [class.is-selected]="!automaticCompilation()" (click)="automaticCompilation.set(false)">
+            Desactivada @if (!automaticCompilation()) { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <p class="menu-heading has-separator">Modo de compilación</p>
+          <button type="button" [class.is-selected]="compileMode() === 'normal'" (click)="compileMode.set('normal')">
+            Normal @if (compileMode() === 'normal') { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <button type="button" [class.is-selected]="compileMode() === 'fast'" (click)="compileMode.set('fast')">
+            Rápido (borrador) @if (compileMode() === 'fast') { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <p class="menu-heading has-separator">Comprobación de sintaxis</p>
+          <button type="button" [class.is-selected]="syntaxCheck() === 'enabled'" (click)="syntaxCheck.set('enabled')">
+            Comprobar sintaxis antes de compilar @if (syntaxCheck() === 'enabled') { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <button type="button" [class.is-selected]="syntaxCheck() === 'disabled'" (click)="syntaxCheck.set('disabled')">
+            No comprobar sintaxis @if (syntaxCheck() === 'disabled') { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <p class="menu-heading has-separator">Manejo de errores de compilación</p>
+          <button type="button" [class.is-selected]="errorHandling() === 'stop'" (click)="errorHandling.set('stop')">
+            Detener en el primer error @if (errorHandling() === 'stop') { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <button type="button" [class.is-selected]="errorHandling() === 'continue'" (click)="errorHandling.set('continue')">
+            Intentar compilar a pesar de los errores @if (errorHandling() === 'continue') { <svg lucideCheck [size]="15"></svg> }
+          </button>
+          <button type="button" class="menu-action" (click)="recompileMenuOpen.set(false)">Detener compilación</button>
+          <button type="button" class="menu-action" (click)="recompile()">Recompilar desde cero</button>
+        </div>
+      }
+    </div>
+
+    <app-ui-tooltip text="Descargar PDF" [showOnFocus]="false">
+      <button class="toolbar-icon" type="button" aria-label="Descargar PDF" (click)="downloadPdf()">
+        <svg lucideDownload [size]="17"></svg>
+      </button>
+    </app-ui-tooltip>
+
+    <div class="toolbar-spacer"></div>
+
+    <app-ui-tooltip text="Invertir colores de la vista previa" [showOnFocus]="false">
+      <button class="toolbar-icon" type="button" aria-label="Invertir colores de la vista previa" [class.is-active]="inverted()" (click)="toggleInverted()">
+        <svg lucideContrast [size]="17"></svg>
+      </button>
+    </app-ui-tooltip>
+
+    <div class="page-controls" aria-label="Navegación de páginas">
+      <app-ui-tooltip text="Página anterior" [showOnFocus]="false">
+        <button class="toolbar-icon" type="button" aria-label="Página anterior" [disabled]="currentPage() === 1" (click)="previousPage()">
+          <svg lucideChevronLeft [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <span class="page-indicator" aria-live="polite">{{ currentPage() }} / {{ totalPages }}</span>
+      <app-ui-tooltip text="Página siguiente" [showOnFocus]="false">
+        <button class="toolbar-icon" type="button" aria-label="Página siguiente" [disabled]="currentPage() === totalPages" (click)="nextPage()">
+          <svg lucideChevronRight [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+    </div>
+
+    <div class="zoom-controls" aria-label="Controles de zoom">
+      <app-ui-tooltip text="Alejar" [showOnFocus]="false">
+        <button class="toolbar-icon" type="button" aria-label="Alejar" (click)="zoomOut()"><svg lucideMinus [size]="17"></svg></button>
+      </app-ui-tooltip>
+      <app-ui-tooltip text="Acercar" [showOnFocus]="false">
+        <button class="toolbar-icon" type="button" aria-label="Acercar" (click)="zoomIn()"><svg lucidePlus [size]="17"></svg></button>
+      </app-ui-tooltip>
+      <div class="zoom-selector">
+        <button type="button" class="zoom-toggle" [attr.aria-expanded]="zoomMenuOpen()" (click)="toggleZoomMenu()">
+          {{ zoomLabel() }} <svg lucideChevronDown [size]="14"></svg>
+        </button>
+        @if (zoomMenuOpen()) {
+          <div class="pdf-menu zoom-menu" role="menu" aria-label="Opciones de zoom">
+            <input type="text" aria-label="Porcentaje de zoom" [value]="zoomLabel()" (change)="updateZoom($event)" />
+            <button type="button" (click)="zoomIn()">Acercar <span>Ctrl +</span></button>
+            <button type="button" (click)="zoomOut()">Alejar <span>Ctrl -</span></button>
+            <button type="button" (click)="fitToWidth()">Ajustar al ancho</button>
+            <button type="button" (click)="fitToHeight()">Ajustar a la altura</button>
+            <button type="button" class="menu-action" (click)="togglePresentationMode()">Modo presentación</button>
+            <p class="menu-heading has-separator">Zoom rápido</p>
+            @for (percentage of [50, 75, 100, 150, 200, 400]; track percentage) {
+              <button type="button" [class.is-selected]="zoom() === percentage" (click)="setZoom(percentage)">{{ percentage }}%</button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <div #pdfStage class="pdf-stage" [class.is-inverted]="inverted()" (scroll)="onStageScroll()">
+    @if (presentationMode()) {
+      <button class="exit-presentation" type="button" (click)="exitPresentationMode()">Salir de presentación</button>
+    }
+
+    <div class="pdf-pages" [style.--pdf-zoom]="zoom() / 100">
+      @for (page of pages; track page) {
+        <article #pdfPage class="pdf-page" [attr.aria-label]="'Página ' + page">
+          @if (page === 1) {
+            <h1>Ejemplo</h1>
+            <p class="pdf-author">CipherTeX</p>
+            <p class="pdf-date">2026</p>
+            <h2>1&nbsp;&nbsp; Introducción</h2>
+            <p>Vista previa preparada para el documento LaTeX activo. Esta superficie representa cómo se mostrará el resultado de la compilación.</p>
+            <div class="mock-equation" aria-label="Ecuación de ejemplo">E = mc²</div>
+            <table>
+              <caption>Resultados de ejemplo</caption>
+              <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
+              <tbody><tr><td>Precisión</td><td>98%</td></tr><tr><td>Tiempo</td><td>1.2 s</td></tr></tbody>
+            </table>
+          } @else {
+            <h1>Anexo</h1>
+            <h2>2&nbsp;&nbsp; Información adicional</h2>
+            <p>Segunda página de ejemplo para probar la navegación y el desplazamiento vertical del visor.</p>
+            <div class="mock-chart" aria-label="Gráfico de ejemplo"><span></span><span></span><span></span><span></span></div>
+            <p>El contenido mock se reemplazará más adelante por las páginas del PDF generado.</p>
+          }
+          <footer>{{ page }}</footer>
+        </article>
+      }
+    </div>
+  </div>
+</section>

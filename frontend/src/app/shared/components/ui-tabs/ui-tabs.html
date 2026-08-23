@@ -10,7 +10,14 @@
       @if (tab.dirty) {
         <i></i>
       }
-      <b (click)="$event.stopPropagation(); closed.emit(tab.id)" aria-label="Cerrar pestaña">×</b>
+      <b
+        [class.is-disabled]="!canClose(tab)"
+        [attr.aria-disabled]="!canClose(tab)"
+        (click)="$event.stopPropagation(); requestClose(tab)"
+        aria-label="Cerrar pestaña"
+      >
+        ×
+      </b>
     </button>
   }
 </nav>

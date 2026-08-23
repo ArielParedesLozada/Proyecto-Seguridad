@@ -1,0 +1,117 @@
+<header class="editor-topbar">
+  <div class="toolbar-left">
+    <app-ui-brand-logo
+      [compactMode]="true"
+      brandSize="2rem"
+      link="/projects"
+      ariaLabel="Volver a proyectos"
+    ></app-ui-brand-logo>
+
+    <nav class="workspace-menu" aria-label="Menú del proyecto">
+      @for (menu of menuOrder; track menu) {
+        <div class="menu-wrapper">
+          <button
+            class="menu-trigger"
+            type="button"
+            [class.is-open]="openMenu() === menu"
+            [attr.aria-expanded]="openMenu() === menu"
+            (click)="toggleMenu(menu)"
+          >
+            {{ menuLabels[menu] }}
+          </button>
+
+          @if (openMenu() === menu) {
+            <section class="dropdown-menu" [attr.aria-label]="menuLabels[menu]">
+              @for (item of menus[menu]; track item.label; let index = $index) {
+                @if (item.separatorBefore) {
+                  <div class="menu-separator"></div>
+                }
+
+                @if (item.section) {
+                  <span class="menu-section">{{ item.label }}</span>
+                } @else {
+                  <div
+                    class="menu-item-wrapper"
+                    (mouseenter)="item.children ? showSubmenu(menu, index) : hideSubmenu()"
+                  >
+                    <button
+                      class="menu-item"
+                      type="button"
+                      [class.is-selected]="item.selected"
+                      [class.has-children]="!!item.children"
+                      (click)="item.children ? toggleSubmenu(menu, index) : closeMenus()"
+                    >
+                      <span class="item-label">
+                        @if (item.selected) {
+                          <svg lucideCheck [size]="15"></svg>
+                        }
+                        {{ item.label }}
+                      </span>
+                      @if (item.shortcut) {
+                        <kbd>{{ item.shortcut }}</kbd>
+                      }
+                      @if (item.children) {
+                        <svg lucideChevronRight [size]="16"></svg>
+                      }
+                    </button>
+
+                    @if (item.children && openSubmenu() === menu + '-' + index) {
+                      <section class="submenu" [attr.aria-label]="item.label">
+                        @for (child of item.children; track child.label) {
+                          <button
+                            class="menu-item"
+                            type="button"
+                            [class.is-selected]="child.selected"
+                            (click)="closeMenus()"
+                          >
+                            <span class="item-label">
+                              @if (child.selected) {
+                                <svg lucideCheck [size]="15"></svg>
+                              }
+                              {{ child.label }}
+                            </span>
+                          </button>
+                        }
+                      </section>
+                    }
+                  </div>
+                }
+              }
+            </section>
+          }
+        </div>
+      }
+    </nav>
+  </div>
+
+  <div class="project-menu-wrapper">
+    <button
+      class="project-name"
+      type="button"
+      [class.is-open]="isProjectMenuOpen()"
+      [attr.aria-expanded]="isProjectMenuOpen()"
+      (click)="toggleProjectMenu()"
+    >
+      Proyecto
+      <svg lucideChevronDown [size]="15"></svg>
+    </button>
+
+    @if (isProjectMenuOpen()) {
+      <section class="dropdown-menu project-dropdown" aria-label="Opciones del proyecto">
+        @for (item of projectMenuItems; track item.label) {
+          @if (item.separatorBefore) {
+            <div class="menu-separator"></div>
+          }
+
+          <button class="menu-item" type="button" (click)="closeMenus()">
+            <span class="item-label">{{ item.label }}</span>
+          </button>
+        }
+      </section>
+    }
+  </div>
+
+  <div class="toolbar-actions">
+    <button class="share-button" type="button"><svg lucideShare2 [size]="16"></svg>Share</button>
+  </div>
+</header>
