@@ -14,3 +14,7 @@ node_modules
 
 # Local frontend configuration (contains the PrimeUI license key)
 /frontend/public/runtime-config.js
+
+# Env files
+.env
+.secrets

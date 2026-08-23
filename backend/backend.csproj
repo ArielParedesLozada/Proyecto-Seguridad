@@ -7,8 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Env -->
+    <PackageReference Include="DotNetEnv" Version="3.2.0" />
+    <!-- ASP NET Core -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.29" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <!-- Auth -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.29" />
+    <!-- EF Core packages -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
+
   </ItemGroup>
 
 </Project>
