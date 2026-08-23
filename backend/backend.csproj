@@ -23,6 +23,11 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
 
+    <!-- Conversión Markdown -> HTML -->
+    <PackageReference Include="Markdig" Version="0.37.0" />
+    <!-- Generación de PDF a partir de HTML (Chromium gestionado por la librería) -->
+    <PackageReference Include="PuppeteerSharp" Version="20.2.6" />
+
   </ItemGroup>
 
 </Project>

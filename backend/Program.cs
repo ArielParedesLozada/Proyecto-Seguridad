@@ -18,6 +18,7 @@ if (string.IsNullOrWhiteSpace(CONNECTION_STRING))
 builder.Services
     .AddDatabase(CONNECTION_STRING)
     .AddServices()
+    .AddCompilation()
     .AddAuth(GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, builder.Configuration);
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
