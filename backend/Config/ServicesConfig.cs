@@ -1,5 +1,4 @@
 using Backend.App.Auth;
-using Backend.App.Example;
 
 namespace Backend.Config;
 
