@@ -1,3 +1,11 @@
-<span class="tip" [class.tip-right]="position() === 'right'" [class.tip-disabled]="disabled()"
-  ><ng-content /><small>{{ text() }}</small></span
+<span
+  class="tip"
+  [class.tip-right]="position() === 'right'"
+  [class.tip-disabled]="disabled()"
+  [class.tip-focus-disabled]="!showOnFocus()"
+  (mouseenter)="show()"
+  (mouseleave)="hide()"
+  (focusin)="showFromFocus()"
+  (focusout)="hide()"
+  ><ng-content /></span
 >

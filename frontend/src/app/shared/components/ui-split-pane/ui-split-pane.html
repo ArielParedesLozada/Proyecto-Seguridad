@@ -1,5 +1,22 @@
-<section class="split" [style.--first]="firstSize()">
+<section
+  class="split"
+  [class.is-collapsed]="collapsed()"
+  [class.first-overflow-visible]="!firstScrollable()"
+  [class.is-vertical]="orientation() === 'vertical'"
+  [style.--first]="currentFirstSize() ?? firstSize()"
+>
   <div class="first"><ng-content select="[primary]" /></div>
-  <div class="divider"></div>
+  <div class="divider" [class.is-resizable]="resizable()" (pointerdown)="startResize($event)">
+    @if (collapsible()) {
+      <button
+        type="button"
+        [attr.aria-label]="collapsed() ? 'Mostrar panel lateral' : 'Ocultar panel lateral'"
+        (pointerdown)="$event.stopPropagation()"
+        (click)="collapseToggled.emit()"
+      >
+        {{ collapsed() ? '>' : '<' }}
+      </button>
+    }
+  </div>
   <div class="second"><ng-content select="[secondary]" /></div>
 </section>

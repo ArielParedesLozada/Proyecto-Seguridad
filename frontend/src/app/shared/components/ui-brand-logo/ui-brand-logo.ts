@@ -11,4 +11,6 @@ import { RouterLink } from '@angular/router';
 export class UiBrandLogoComponent {
   readonly link = input('/');
   readonly ariaLabel = input('ChiperTex, ir al inicio');
+  readonly compactMode = input(false);
+  readonly brandSize = input('4rem');
 }

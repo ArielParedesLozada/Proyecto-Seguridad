@@ -34,12 +34,21 @@ input {
   align-items: center;
   gap: 0.7rem;
 }
-.title-cell strong,
-.title-cell small {
+.project-link {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.project-link strong,
+.project-link small {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.project-link:hover strong {
+  color: var(--primary-color);
 }
 .title-cell small,
 .updated-cell {

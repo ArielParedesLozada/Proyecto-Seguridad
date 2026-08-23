@@ -8,10 +8,10 @@
 </td>
 <td class="title-cell">
   <span class="document-icon"><svg lucideFileText [size]="19"></svg></span>
-  <span
-    ><strong>{{ project().title }}</strong
-    ><small>{{ project().description }}</small></span
-  >
+  <a class="project-link" [routerLink]="['/editor', project().id]">
+    <strong>{{ project().title }}</strong>
+    <small>{{ project().description }}</small>
+  </a>
 </td>
 <td class="owner-cell">
   <span class="avatar">{{ project().ownerInitials }}</span

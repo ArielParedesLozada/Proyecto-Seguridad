@@ -1,4 +1,5 @@
 import { Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideFileText } from '@lucide/angular';
 import { Project } from '../../models/project.interface';
 import { ProjectActionMenuComponent } from '../project-action-menu/project-action-menu';
@@ -6,7 +7,7 @@ import { ProjectActionMenuComponent } from '../project-action-menu/project-actio
 @Component({
   selector: 'tr[app-project-table-row]',
   standalone: true,
-  imports: [LucideFileText, ProjectActionMenuComponent],
+  imports: [LucideFileText, ProjectActionMenuComponent, RouterLink],
   host: { '[class.is-selected]': 'selected()' },
   templateUrl: './project-table-row.html',
   styleUrl: './project-table-row.css',

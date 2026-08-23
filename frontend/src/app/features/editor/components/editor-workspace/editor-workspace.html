@@ -1,0 +1,371 @@
+<section class="editor-workspace" [class.has-document-search]="documentSearchOpen()" aria-label="Editor LaTeX">
+  <app-ui-tabs
+    [tabs]="tabs()"
+    [activeId]="activeFileId() ?? undefined"
+    [minimumOpenTabs]="1"
+    (selected)="selectTab($event)"
+    (closed)="closeTab($event)"
+  ></app-ui-tabs>
+
+  <ng-template #headingOptionsTemplate>
+    @for (heading of headingOptions; track heading) {
+      <button
+        type="button"
+        role="menuitem"
+        [class.is-selected]="heading === selectedHeading()"
+        (click)="selectHeading(heading)"
+      >
+        {{ heading }}
+      </button>
+    }
+  </ng-template>
+
+  <ng-template #mathOptionsTemplate>
+    @for (option of mathOptions; track option) {
+      <button type="button" role="menuitem" (click)="selectMath()">{{ option }}</button>
+    }
+  </ng-template>
+
+  <ng-template #listOptionsTemplate>
+    @for (option of listOptions; track option; let index = $index) {
+      <app-ui-tooltip [text]="option" [showOnFocus]="false">
+        <button type="button" role="menuitem" [attr.aria-label]="option" (click)="selectList()">
+          @if (index === 0) {
+            <svg lucideList [size]="17"></svg>
+          } @else {
+            <svg lucideListOrdered [size]="17"></svg>
+          }
+        </button>
+      </app-ui-tooltip>
+    }
+  </ng-template>
+
+  <div class="editor-toolbar" aria-label="Herramientas del editor">
+    <div class="tool-group history-tools">
+      <app-ui-tooltip text="Deshacer (Ctrl + Z)" [showOnFocus]="false">
+        <button type="button" aria-label="Deshacer"><svg lucideUndo2 [size]="17"></svg></button>
+      </app-ui-tooltip>
+      <app-ui-tooltip text="Rehacer (Ctrl + Y)" [showOnFocus]="false">
+        <button type="button" aria-label="Rehacer"><svg lucideRedo2 [size]="17"></svg></button>
+      </app-ui-tooltip>
+    </div>
+
+    <div class="tool-group format-tools">
+      <div class="toolbar-dropdown">
+        <app-ui-tooltip [text]="'Estilo de texto: ' + selectedHeading()" [showOnFocus]="false">
+          <button
+            type="button"
+            class="dropdown-trigger"
+            [class.is-active]="openToolbarMenu() === 'heading'"
+            [attr.aria-expanded]="openToolbarMenu() === 'heading'"
+            aria-label="Estilo de texto"
+            (click)="toggleToolbarMenu('heading')"
+          >
+            <svg lucideCaseSensitive [size]="17"></svg>
+            <svg lucideChevronDown [size]="15"></svg>
+          </button>
+        </app-ui-tooltip>
+        @if (openToolbarMenu() === 'heading') {
+          <div class="toolbar-menu" role="menu" aria-label="Estilos de texto">
+            <ng-container [ngTemplateOutlet]="headingOptionsTemplate"></ng-container>
+          </div>
+        }
+      </div>
+
+      <app-ui-tooltip text="Negrita (Ctrl + B)" [showOnFocus]="false">
+        <button type="button" aria-label="Negrita"><svg lucideBold [size]="17"></svg></button>
+      </app-ui-tooltip>
+      <app-ui-tooltip text="Cursiva (Ctrl + I)" [showOnFocus]="false">
+        <button type="button" aria-label="Cursiva"><svg lucideItalic [size]="17"></svg></button>
+      </app-ui-tooltip>
+    </div>
+
+    <div class="tool-group insert-tools">
+      <div class="toolbar-dropdown insert-core">
+        <app-ui-tooltip text="Insertar matemáticas" [showOnFocus]="false">
+          <button
+            type="button"
+            [class.is-active]="openToolbarMenu() === 'math'"
+            aria-label="Insertar matemáticas"
+            [attr.aria-expanded]="openToolbarMenu() === 'math'"
+            (click)="toggleToolbarMenu('math')"
+          >
+            <svg lucideSigma [size]="17"></svg>
+          </button>
+        </app-ui-tooltip>
+        @if (openToolbarMenu() === 'math') {
+          <div class="toolbar-menu" role="menu" aria-label="Opciones de matemáticas">
+            <ng-container [ngTemplateOutlet]="mathOptionsTemplate"></ng-container>
+          </div>
+        }
+      </div>
+      <app-ui-tooltip class="insert-core" text="Insertar enlace" [showOnFocus]="false">
+        <button type="button" aria-label="Insertar enlace">
+          <svg lucideLink2 [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <app-ui-tooltip class="insert-tertiary" text="Agregar comentario" [showOnFocus]="false">
+        <button type="button" aria-label="Agregar comentario" (click)="commentRequested.emit()">
+          <svg lucideMessageSquarePlus [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <app-ui-tooltip class="insert-secondary" text="Insertar referencia cruzada" [showOnFocus]="false">
+        <button type="button" aria-label="Insertar referencia cruzada">
+          <svg lucideGitBranch [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <app-ui-tooltip class="insert-secondary" text="Insertar cita" [showOnFocus]="false">
+        <button type="button" aria-label="Insertar cita">
+          <svg lucideQuote [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <app-ui-tooltip class="insert-secondary" text="Insertar figura" [showOnFocus]="false">
+        <button type="button" aria-label="Insertar figura">
+          <svg lucideImage [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <app-ui-tooltip class="insert-secondary" text="Insertar tabla" [showOnFocus]="false">
+        <button type="button" aria-label="Insertar tabla">
+          <svg lucideTable2 [size]="17"></svg>
+        </button>
+      </app-ui-tooltip>
+      <div class="toolbar-dropdown insert-secondary">
+        <app-ui-tooltip text="Insertar lista" [showOnFocus]="false">
+          <button
+            type="button"
+            [class.is-active]="openToolbarMenu() === 'list'"
+            [attr.aria-expanded]="openToolbarMenu() === 'list'"
+            aria-label="Insertar lista"
+            (click)="toggleToolbarMenu('list')"
+          >
+            <svg lucideList [size]="17"></svg>
+          </button>
+        </app-ui-tooltip>
+        @if (openToolbarMenu() === 'list') {
+          <div class="toolbar-menu toolbar-list-menu" role="menu" aria-label="Opciones de lista">
+            <ng-container [ngTemplateOutlet]="listOptionsTemplate"></ng-container>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="toolbar-overflow" #toolbarOverflow>
+      <app-ui-tooltip text="Más herramientas" [showOnFocus]="false">
+        <button
+          type="button"
+          [class.is-active]="openToolbarMenu() === 'overflow'"
+          [attr.aria-expanded]="openToolbarMenu() === 'overflow'"
+          aria-label="Más herramientas"
+          (click)="toggleToolbarMenu('overflow')"
+        >
+          <svg lucideEllipsis [size]="18"></svg>
+        </button>
+      </app-ui-tooltip>
+
+      @if (openToolbarMenu() === 'overflow') {
+        <div
+          class="toolbar-menu toolbar-overflow-menu"
+          role="menu"
+          aria-label="Más herramientas"
+          [style.--overflow-available.px]="overflowAvailableWidth()"
+        >
+          <app-ui-tooltip class="overflow-history" text="Deshacer (Ctrl + Z)" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Deshacer" (click)="toggleToolbarMenu('overflow')"><svg lucideUndo2 [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-history" text="Rehacer (Ctrl + Y)" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Rehacer" (click)="toggleToolbarMenu('overflow')"><svg lucideRedo2 [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <div class="overflow-dropdown overflow-format">
+            <app-ui-tooltip [text]="'Estilo de texto: ' + selectedHeading()" [showOnFocus]="false">
+              <button type="button" role="menuitem" aria-label="Estilo de texto" (click)="toggleOverflowSubmenu('heading')"><svg lucideCaseSensitive [size]="17"></svg></button>
+            </app-ui-tooltip>
+            @if (openOverflowSubmenu() === 'heading') {
+              <div class="toolbar-menu toolbar-overflow-submenu" role="menu" aria-label="Estilos de texto">
+                <ng-container [ngTemplateOutlet]="headingOptionsTemplate"></ng-container>
+              </div>
+            }
+          </div>
+          <app-ui-tooltip class="overflow-format" text="Negrita (Ctrl + B)" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Negrita" (click)="toggleToolbarMenu('overflow')"><svg lucideBold [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-format" text="Cursiva (Ctrl + I)" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Cursiva" (click)="toggleToolbarMenu('overflow')"><svg lucideItalic [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <div class="overflow-dropdown overflow-insert overflow-core">
+            <app-ui-tooltip text="Insertar matemáticas" [showOnFocus]="false">
+              <button type="button" role="menuitem" aria-label="Insertar matemáticas" (click)="toggleOverflowSubmenu('math')"><svg lucideSigma [size]="17"></svg></button>
+            </app-ui-tooltip>
+            @if (openOverflowSubmenu() === 'math') {
+              <div class="toolbar-menu toolbar-overflow-submenu" role="menu" aria-label="Opciones de matemáticas">
+                <ng-container [ngTemplateOutlet]="mathOptionsTemplate"></ng-container>
+              </div>
+            }
+          </div>
+          <app-ui-tooltip class="overflow-insert overflow-core" text="Insertar enlace" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Insertar enlace" (click)="toggleToolbarMenu('overflow')"><svg lucideLink2 [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-insert overflow-tertiary" text="Agregar comentario" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Agregar comentario" (click)="commentRequested.emit(); toggleToolbarMenu('overflow')"><svg lucideMessageSquarePlus [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-insert overflow-secondary" text="Insertar referencia cruzada" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Insertar referencia cruzada" (click)="toggleToolbarMenu('overflow')"><svg lucideGitBranch [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-insert overflow-secondary" text="Insertar cita" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Insertar cita" (click)="toggleToolbarMenu('overflow')"><svg lucideQuote [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-insert overflow-secondary" text="Insertar figura" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Insertar figura" (click)="toggleToolbarMenu('overflow')"><svg lucideImage [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <app-ui-tooltip class="overflow-insert overflow-secondary" text="Insertar tabla" [showOnFocus]="false">
+            <button type="button" role="menuitem" aria-label="Insertar tabla" (click)="toggleToolbarMenu('overflow')"><svg lucideTable2 [size]="17"></svg></button>
+          </app-ui-tooltip>
+          <div class="overflow-dropdown overflow-insert overflow-secondary">
+            <app-ui-tooltip text="Insertar lista" [showOnFocus]="false">
+              <button type="button" role="menuitem" aria-label="Insertar lista" (click)="toggleOverflowSubmenu('list')"><svg lucideList [size]="17"></svg></button>
+            </app-ui-tooltip>
+            @if (openOverflowSubmenu() === 'list') {
+              <div class="toolbar-menu toolbar-list-menu toolbar-overflow-submenu" role="menu" aria-label="Opciones de lista">
+                <ng-container [ngTemplateOutlet]="listOptionsTemplate"></ng-container>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <div class="mode-selector" aria-label="Modo de edición">
+      <button
+        type="button"
+        [class.is-active]="mode() === 'code'"
+        [attr.aria-pressed]="mode() === 'code'"
+        (click)="setMode('code')"
+      >
+        Código
+      </button>
+      <button
+        type="button"
+        [class.is-active]="mode() === 'visual'"
+        [attr.aria-pressed]="mode() === 'visual'"
+        (click)="setMode('visual')"
+      >
+        Visual
+      </button>
+    </div>
+
+    <app-ui-tooltip class="toolbar-search" text="Buscar en el documento" [showOnFocus]="false">
+      <button type="button" aria-label="Buscar en el documento" (click)="toggleDocumentSearch()">
+        <svg lucideSearch [size]="17"></svg>
+      </button>
+    </app-ui-tooltip>
+  </div>
+
+  @if (activeFileId() && mode() === 'code') {
+    <div class="code-editor">
+      <div
+        class="line-numbers"
+        aria-hidden="true"
+        [style.transform]="'translateY(-' + editorScrollTop() + 'px)'"
+      >
+        @for (line of lineNumbers(); track line) {
+          <span>{{ line }}</span>
+        }
+      </div>
+      <textarea
+        #codeInput
+        aria-label="Contenido LaTeX de {{ activeFileId() }}"
+        spellcheck="false"
+        wrap="soft"
+        [value]="activeContent()"
+        (input)="updateContent($event)"
+        (scroll)="updateScroll($event)"
+      ></textarea>
+    </div>
+  } @else if (activeFileId()) {
+    <app-editor-visual-document [content]="activeContent()"></app-editor-visual-document>
+  } @else {
+    <div class="empty-editor">Selecciona un archivo para editarlo.</div>
+  }
+
+  @if (documentSearchOpen()) {
+    <section class="document-search-panel" aria-label="Buscar y reemplazar en el documento">
+      <div class="document-search-row">
+        <app-ui-search-input
+          #documentSearchInput
+          class="document-search-input"
+          placeholder="Buscar"
+          [value]="documentSearchQuery()"
+          (changed)="updateDocumentSearchQuery($event)"
+        ></app-ui-search-input>
+
+        @if (documentSearchQuery()) {
+          <span class="search-count" aria-live="polite">
+            {{ documentMatches().length ? documentSearchIndex() + 1 : 0 }} de {{ documentMatches().length }}
+          </span>
+        }
+
+        <div class="document-search-options" aria-label="Opciones de búsqueda">
+          <app-ui-tooltip text="Coincidir mayúsculas y minúsculas" [showOnFocus]="false">
+            <button
+              type="button"
+              aria-label="Coincidir mayúsculas y minúsculas"
+              [attr.aria-pressed]="documentSearchOptions().caseSensitive"
+              [class.is-active]="documentSearchOptions().caseSensitive"
+              (click)="toggleDocumentSearchOption('caseSensitive')"
+            >Aa</button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Expresión regular" [showOnFocus]="false">
+            <button
+              type="button"
+              aria-label="Expresión regular"
+              [attr.aria-pressed]="documentSearchOptions().regularExpression"
+              [class.is-active]="documentSearchOptions().regularExpression"
+              (click)="toggleDocumentSearchOption('regularExpression')"
+            >.*</button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Palabra completa" [showOnFocus]="false">
+            <button
+              type="button"
+              aria-label="Palabra completa"
+              [attr.aria-pressed]="documentSearchOptions().wholeWord"
+              [class.is-active]="documentSearchOptions().wholeWord"
+              (click)="toggleDocumentSearchOption('wholeWord')"
+            >W</button>
+          </app-ui-tooltip>
+        </div>
+
+        <div class="document-search-navigation" aria-label="Navegar coincidencias">
+          <app-ui-tooltip text="Coincidencia anterior" [showOnFocus]="false">
+            <button type="button" aria-label="Coincidencia anterior" (click)="previousDocumentMatch()">
+              <svg lucideChevronUp [size]="17"></svg>
+            </button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Coincidencia siguiente" [showOnFocus]="false">
+            <button type="button" aria-label="Coincidencia siguiente" (click)="nextDocumentMatch()">
+              <svg lucideChevronDown [size]="17"></svg>
+            </button>
+          </app-ui-tooltip>
+        </div>
+
+        <app-ui-tooltip class="document-search-close" text="Cerrar buscador" [showOnFocus]="false">
+          <button type="button" aria-label="Cerrar buscador" (click)="closeDocumentSearch()">
+            <svg lucideX [size]="17"></svg>
+          </button>
+        </app-ui-tooltip>
+      </div>
+
+      <div class="document-replace-row">
+        <input
+          type="text"
+          aria-label="Reemplazar con"
+          placeholder="Reemplazar con"
+          [value]="documentReplacement()"
+          (input)="updateDocumentReplacement($event)"
+        />
+        <button type="button" [disabled]="!activeDocumentMatch()" (click)="replaceCurrentDocumentMatch()">Reemplazar</button>
+        <button type="button" [disabled]="!documentMatches().length" (click)="replaceAllDocumentMatches()">Reemplazar todo</button>
+      </div>
+    </section>
+  }
+</section>

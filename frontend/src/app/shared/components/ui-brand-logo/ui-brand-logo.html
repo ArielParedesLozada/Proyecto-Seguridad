@@ -1,3 +1,10 @@
-<a class="brand" [routerLink]="link()" [attr.aria-label]="ariaLabel()">
-  <img src="/images/LogoIcono.png" alt="ChiperTex" />
+<a
+  class="brand"
+  [class.is-compact]="compactMode()"
+  [routerLink]="link()"
+  [attr.aria-label]="ariaLabel()"
+  [style.--brand-height]="brandSize()"
+>
+  <img class="full-brand" src="/images/LogoIcono.png" alt="CipherTex" />
+  <img class="compact-brand" src="/images/LogoC.png" alt="" aria-hidden="true" />
 </a>

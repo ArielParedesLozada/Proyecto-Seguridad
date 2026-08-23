@@ -1,5 +1,5 @@
 <section class="empty-state">
-  <span>{{ icon() }}</span>
+  <span><ng-content select="[empty-state-icon]">{{ icon() }}</ng-content></span>
   <h2>{{ title() }}</h2>
   <p>{{ description() }}</p>
   <ng-content />
