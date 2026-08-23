@@ -1,4 +1,4 @@
-<section class="editor-workspace" aria-label="Editor LaTeX">
+<section class="editor-workspace" [class.has-document-search]="documentSearchOpen()" aria-label="Editor LaTeX">
   <app-ui-tabs
     [tabs]="tabs()"
     [activeId]="activeFileId() ?? undefined"
@@ -255,7 +255,7 @@
     </div>
 
     <app-ui-tooltip class="toolbar-search" text="Buscar en el documento" [showOnFocus]="false">
-      <button type="button" aria-label="Buscar en el documento">
+      <button type="button" aria-label="Buscar en el documento" (click)="toggleDocumentSearch()">
         <svg lucideSearch [size]="17"></svg>
       </button>
     </app-ui-tooltip>
@@ -273,9 +273,10 @@
         }
       </div>
       <textarea
+        #codeInput
         aria-label="Contenido LaTeX de {{ activeFileId() }}"
         spellcheck="false"
-        wrap="off"
+        wrap="soft"
         [value]="activeContent()"
         (input)="updateContent($event)"
         (scroll)="updateScroll($event)"
@@ -285,5 +286,86 @@
     <app-editor-visual-document [content]="activeContent()"></app-editor-visual-document>
   } @else {
     <div class="empty-editor">Selecciona un archivo para editarlo.</div>
+  }
+
+  @if (documentSearchOpen()) {
+    <section class="document-search-panel" aria-label="Buscar y reemplazar en el documento">
+      <div class="document-search-row">
+        <app-ui-search-input
+          #documentSearchInput
+          class="document-search-input"
+          placeholder="Buscar"
+          [value]="documentSearchQuery()"
+          (changed)="updateDocumentSearchQuery($event)"
+        ></app-ui-search-input>
+
+        @if (documentSearchQuery()) {
+          <span class="search-count" aria-live="polite">
+            {{ documentMatches().length ? documentSearchIndex() + 1 : 0 }} de {{ documentMatches().length }}
+          </span>
+        }
+
+        <div class="document-search-options" aria-label="Opciones de búsqueda">
+          <app-ui-tooltip text="Coincidir mayúsculas y minúsculas" [showOnFocus]="false">
+            <button
+              type="button"
+              aria-label="Coincidir mayúsculas y minúsculas"
+              [attr.aria-pressed]="documentSearchOptions().caseSensitive"
+              [class.is-active]="documentSearchOptions().caseSensitive"
+              (click)="toggleDocumentSearchOption('caseSensitive')"
+            >Aa</button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Expresión regular" [showOnFocus]="false">
+            <button
+              type="button"
+              aria-label="Expresión regular"
+              [attr.aria-pressed]="documentSearchOptions().regularExpression"
+              [class.is-active]="documentSearchOptions().regularExpression"
+              (click)="toggleDocumentSearchOption('regularExpression')"
+            >.*</button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Palabra completa" [showOnFocus]="false">
+            <button
+              type="button"
+              aria-label="Palabra completa"
+              [attr.aria-pressed]="documentSearchOptions().wholeWord"
+              [class.is-active]="documentSearchOptions().wholeWord"
+              (click)="toggleDocumentSearchOption('wholeWord')"
+            >W</button>
+          </app-ui-tooltip>
+        </div>
+
+        <div class="document-search-navigation" aria-label="Navegar coincidencias">
+          <app-ui-tooltip text="Coincidencia anterior" [showOnFocus]="false">
+            <button type="button" aria-label="Coincidencia anterior" (click)="previousDocumentMatch()">
+              <svg lucideChevronUp [size]="17"></svg>
+            </button>
+          </app-ui-tooltip>
+          <app-ui-tooltip text="Coincidencia siguiente" [showOnFocus]="false">
+            <button type="button" aria-label="Coincidencia siguiente" (click)="nextDocumentMatch()">
+              <svg lucideChevronDown [size]="17"></svg>
+            </button>
+          </app-ui-tooltip>
+        </div>
+
+        <app-ui-tooltip class="document-search-close" text="Cerrar buscador" [showOnFocus]="false">
+          <button type="button" aria-label="Cerrar buscador" (click)="closeDocumentSearch()">
+            <svg lucideX [size]="17"></svg>
+          </button>
+        </app-ui-tooltip>
+      </div>
+
+      <div class="document-replace-row">
+        <input
+          type="text"
+          aria-label="Reemplazar con"
+          placeholder="Reemplazar con"
+          [value]="documentReplacement()"
+          (input)="updateDocumentReplacement($event)"
+        />
+        <button type="button" [disabled]="!activeDocumentMatch()" (click)="replaceCurrentDocumentMatch()">Reemplazar</button>
+        <button type="button" [disabled]="!documentMatches().length" (click)="replaceAllDocumentMatches()">Reemplazar todo</button>
+      </div>
+    </section>
   }
 </section>

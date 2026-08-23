@@ -17,6 +17,7 @@ import {
   LucideBold,
   LucideCaseSensitive,
   LucideChevronDown,
+  LucideChevronUp,
   LucideEllipsis,
   LucideGitBranch,
   LucideImage,
@@ -31,7 +32,9 @@ import {
   LucideSigma,
   LucideTable2,
   LucideUndo2,
+  LucideX,
 } from '@lucide/angular';
+import { UiSearchInputComponent } from '../../../../shared/components/ui-search-input/ui-search-input';
 import { UiTabsComponent, UiTab } from '../../../../shared/components/ui-tabs/ui-tabs';
 import { UiTooltipComponent } from '../../../../shared/components/ui-tooltip/ui-tooltip';
 import { EditorVisualDocumentComponent } from '../editor-visual-document/editor-visual-document';
@@ -39,6 +42,8 @@ import { EditorVisualDocumentComponent } from '../editor-visual-document/editor-
 type ToolbarMenu = 'heading' | 'math' | 'list' | 'overflow' | null;
 type OverflowSubmenu = Exclude<ToolbarMenu, 'overflow' | null>;
 type EditorMode = 'code' | 'visual';
+type DocumentSearchOption = 'caseSensitive' | 'regularExpression' | 'wholeWord';
+type TextMatch = { start: number; end: number };
 
 @Component({
   selector: 'app-editor-workspace',
@@ -47,6 +52,7 @@ type EditorMode = 'code' | 'visual';
     LucideBold,
     LucideCaseSensitive,
     LucideChevronDown,
+    LucideChevronUp,
     LucideEllipsis,
     LucideGitBranch,
     LucideImage,
@@ -61,7 +67,9 @@ type EditorMode = 'code' | 'visual';
     LucideSigma,
     LucideTable2,
     LucideUndo2,
+    LucideX,
     UiTabsComponent,
+    UiSearchInputComponent,
     UiTooltipComponent,
     EditorVisualDocumentComponent,
     NgTemplateOutlet,
@@ -74,6 +82,8 @@ export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
   private resizeObserver: ResizeObserver | null = null;
 
   @ViewChild('toolbarOverflow') private toolbarOverflow?: ElementRef<HTMLElement>;
+  @ViewChild('codeInput') private codeInput?: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('documentSearchInput') private documentSearchInput?: UiSearchInputComponent;
 
   readonly selectedFile = input<string | null>('main.tex');
   readonly activeFileChanged = output<string | null>();
@@ -86,6 +96,15 @@ export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
   readonly overflowAvailableWidth = signal(0);
   readonly selectedHeading = signal('Texto normal');
   readonly editorScrollTop = signal(0);
+  readonly documentSearchOpen = signal(false);
+  readonly documentSearchQuery = signal('');
+  readonly documentReplacement = signal('');
+  readonly documentSearchIndex = signal(0);
+  readonly documentSearchOptions = signal<Record<DocumentSearchOption, boolean>>({
+    caseSensitive: false,
+    regularExpression: false,
+    wholeWord: false,
+  });
   readonly fileContents = signal<Record<string, string>>({
     'main.tex': `\\documentclass{article}
 \\usepackage{graphicx}
@@ -127,11 +146,26 @@ Escribe aquí el contenido de tu documento.
       (_, index) => index + 1,
     ),
   );
+  readonly documentMatches = computed(() =>
+    this.findMatches(
+      this.activeContent(),
+      this.documentSearchQuery(),
+      this.documentSearchOptions(),
+    ),
+  );
+  readonly activeDocumentMatch = computed(() => {
+    const matches = this.documentMatches();
+    return matches[this.documentSearchIndex()] ?? null;
+  });
 
   constructor() {
     effect(() => {
       const fileName = this.selectedFile();
       if (fileName) this.openFile(fileName);
+    });
+    effect(() => {
+      const matchCount = this.documentMatches().length;
+      this.documentSearchIndex.update((index) => (matchCount ? Math.min(index, matchCount - 1) : 0));
     });
   }
 
@@ -153,7 +187,9 @@ Escribe aquí el contenido de tu documento.
 
   selectTab(fileName: string): void {
     this.activeFileId.set(fileName);
+    this.documentSearchIndex.set(0);
     this.activeFileChanged.emit(fileName);
+    if (this.documentSearchOpen()) this.focusDocumentSearchInput();
   }
 
   closeTab(fileName: string): void {
@@ -218,6 +254,99 @@ Escribe aquí el contenido de tu documento.
     this.editorScrollTop.set((event.target as HTMLTextAreaElement).scrollTop);
   }
 
+  openDocumentSearch(): void {
+    this.documentSearchOpen.set(true);
+    this.focusDocumentSearchInput();
+  }
+
+  toggleDocumentSearch(): void {
+    if (this.documentSearchOpen()) {
+      this.closeDocumentSearch();
+      return;
+    }
+    this.openDocumentSearch();
+  }
+
+  closeDocumentSearch(): void {
+    this.documentSearchOpen.set(false);
+    this.documentSearchQuery.set('');
+    this.documentReplacement.set('');
+    this.documentSearchIndex.set(0);
+    this.clearTextSelection();
+  }
+
+  updateDocumentSearchQuery(query: string): void {
+    this.documentSearchQuery.set(query);
+    this.documentSearchIndex.set(0);
+    queueMicrotask(() => this.focusActiveMatch());
+  }
+
+  updateDocumentReplacement(event: Event): void {
+    this.documentReplacement.set((event.target as HTMLInputElement).value);
+  }
+
+  toggleDocumentSearchOption(option: DocumentSearchOption): void {
+    this.documentSearchOptions.update((options) => ({ ...options, [option]: !options[option] }));
+    this.documentSearchIndex.set(0);
+    queueMicrotask(() => this.focusActiveMatch());
+  }
+
+  previousDocumentMatch(): void {
+    this.moveDocumentMatch(-1);
+  }
+
+  nextDocumentMatch(): void {
+    this.moveDocumentMatch(1);
+  }
+
+  replaceCurrentDocumentMatch(): void {
+    const match = this.activeDocumentMatch();
+    const fileName = this.activeFileId();
+    if (!match || !fileName) return;
+
+    const content = this.activeContent();
+    const replacement = this.documentReplacement();
+    this.setActiveFileContent(content.slice(0, match.start) + replacement + content.slice(match.end));
+    queueMicrotask(() => this.focusActiveMatch());
+  }
+
+  replaceAllDocumentMatches(): void {
+    const matches = this.documentMatches();
+    if (!matches.length || !this.activeFileId()) return;
+
+    const replacement = this.documentReplacement();
+    let content = this.activeContent();
+    for (const match of [...matches].reverse()) {
+      content = content.slice(0, match.start) + replacement + content.slice(match.end);
+    }
+    this.setActiveFileContent(content);
+    this.documentSearchIndex.set(0);
+    queueMicrotask(() => this.focusActiveMatch());
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      this.openDocumentSearch();
+      return;
+    }
+
+    if (!this.documentSearchOpen()) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeDocumentSearch();
+      return;
+    }
+
+    if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
+      event.preventDefault();
+      if (event.shiftKey) this.previousDocumentMatch();
+      else this.nextDocumentMatch();
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as Node | null;
@@ -242,6 +371,74 @@ Escribe aquí el contenido de tu documento.
 
   private defaultContent(fileName: string): string {
     return `% ${fileName}\n\\begin{document}\n\n\\end{document}`;
+  }
+
+  private moveDocumentMatch(direction: number): void {
+    const matches = this.documentMatches();
+    if (!matches.length) return;
+
+    this.documentSearchIndex.update((index) => (index + direction + matches.length) % matches.length);
+    queueMicrotask(() => this.focusActiveMatch());
+  }
+
+  private setActiveFileContent(content: string): void {
+    const fileName = this.activeFileId();
+    if (!fileName) return;
+
+    this.fileContents.update((contents) => ({ ...contents, [fileName]: content }));
+    this.tabs.update((tabs) =>
+      tabs.map((tab) => (tab.id === fileName ? { ...tab, dirty: true } : tab)),
+    );
+  }
+
+  private focusDocumentSearchInput(): void {
+    setTimeout(() => this.documentSearchInput?.focus());
+  }
+
+  private focusActiveMatch(): void {
+    const match = this.activeDocumentMatch();
+    const input = this.codeInput?.nativeElement;
+    if (!match || !input || this.mode() !== 'code') return;
+
+    const lineNumber = this.activeContent().slice(0, match.start).split('\n').length - 1;
+    const lineHeight = Number.parseFloat(getComputedStyle(input).lineHeight) || 20;
+    input.scrollTop = Math.max(0, lineNumber * lineHeight - input.clientHeight / 2);
+    input.setSelectionRange(match.start, match.end);
+  }
+
+  private clearTextSelection(): void {
+    const input = this.codeInput?.nativeElement;
+    if (!input) return;
+    input.setSelectionRange(input.selectionStart, input.selectionStart);
+  }
+
+  private findMatches(
+    content: string,
+    query: string,
+    options: Record<DocumentSearchOption, boolean>,
+  ): TextMatch[] {
+    if (!query) return [];
+
+    const source = options.regularExpression ? query : this.escapeRegularExpression(query);
+    const boundedSource = options.wholeWord ? `\\b(?:${source})\\b` : source;
+    const flags = `g${options.caseSensitive ? '' : 'i'}`;
+
+    try {
+      const expression = new RegExp(boundedSource, flags);
+      const matches: TextMatch[] = [];
+      for (const match of content.matchAll(expression)) {
+        if (!match[0].length) continue;
+        const start = match.index ?? 0;
+        matches.push({ start, end: start + match[0].length });
+      }
+      return matches;
+    } catch {
+      return [];
+    }
+  }
+
+  private escapeRegularExpression(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private updateOverflowAvailableWidth(toolbar: HTMLElement, overflow: HTMLElement): void {

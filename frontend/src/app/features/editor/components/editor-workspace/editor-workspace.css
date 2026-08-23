@@ -13,6 +13,10 @@
   background: var(--surface-card);
 }
 
+.editor-workspace.has-document-search {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
 .editor-toolbar {
   position: relative;
   z-index: 5;
@@ -215,6 +219,8 @@ textarea {
   font-size: 0.8rem;
   line-height: 1.55;
   outline: 0;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
   resize: none;
   tab-size: 2;
 }
@@ -225,6 +231,136 @@ textarea {
   place-items: center;
   color: var(--text-color-secondary);
   font-size: 0.85rem;
+}
+
+.document-search-panel {
+  position: relative;
+  display: grid;
+  container-type: inline-size;
+  gap: 0.55rem;
+  padding: 0.65rem 0.75rem;
+  border-top: 1px solid var(--surface-border);
+  background: var(--surface-ground);
+}
+
+.document-search-row,
+.document-replace-row,
+.document-search-options,
+.document-search-navigation {
+  display: flex;
+  align-items: center;
+}
+
+.document-search-row {
+  gap: 0.4rem;
+  padding-right: 2.3rem;
+}
+
+.document-search-input {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.search-count {
+  min-width: 3.9rem;
+  color: var(--text-color-secondary);
+  font-size: 0.76rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.document-search-options,
+.document-search-navigation {
+  gap: 0.1rem;
+}
+
+.document-search-options button,
+.document-search-navigation button,
+.document-search-close button {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.4rem;
+  color: var(--text-color-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+app-ui-tooltip.document-search-close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.75rem;
+}
+
+.document-search-options button:hover,
+.document-search-options button.is-active,
+.document-search-navigation button:hover,
+.document-search-close button:hover {
+  color: var(--primary-color);
+  background: var(--highlight-bg);
+}
+
+.document-replace-row {
+  gap: 0.45rem;
+}
+
+.document-replace-row input {
+  flex: 1;
+  min-width: 8rem;
+  min-height: 2.15rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.45rem;
+  padding: 0 0.65rem;
+  color: var(--text-color);
+  background: var(--surface-card);
+  font: inherit;
+  font-size: 0.8rem;
+  outline: 0;
+}
+
+.document-replace-row input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
+
+.document-replace-row button {
+  min-height: 2.15rem;
+  border: 0;
+  border-radius: 0.45rem;
+  padding: 0 0.7rem;
+  color: var(--primary-color-contrast);
+  background: var(--primary-color);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.document-replace-row button:hover:not(:disabled) {
+  background: var(--primary-color-hover);
+}
+
+.document-replace-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@container (max-width: 42rem) {
+  .document-search-row,
+  .document-replace-row {
+    flex-wrap: wrap;
+  }
+
+  .document-search-input,
+  .document-replace-row input {
+    flex-basis: 100%;
+  }
 }
 
 @container (max-width: 48rem) {
