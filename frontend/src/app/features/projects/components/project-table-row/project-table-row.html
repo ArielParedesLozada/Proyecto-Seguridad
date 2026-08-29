@@ -10,7 +10,6 @@
   <span class="document-icon"><svg lucideFileText [size]="19"></svg></span>
   <a class="project-link" [routerLink]="['/editor', project().id]">
     <strong>{{ project().title }}</strong>
-    <small>{{ project().description }}</small>
   </a>
 </td>
 <td class="owner-cell">
@@ -18,4 +17,10 @@
   >{{ project().owner }}
 </td>
 <td class="updated-cell">{{ project().updatedAt }}</td>
-<td class="actions-cell"><app-project-action-menu [projectTitle]="project().title" /></td>
+<td class="actions-cell">
+  <app-project-action-menu
+    [projectTitle]="project().title"
+    [canManage]="project().role === 'OWNER'"
+    (actionSelected)="actionSelected.emit($event)"
+  />
+</td>

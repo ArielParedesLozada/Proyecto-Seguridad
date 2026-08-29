@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Backend.Config;
 using Backend.Data.Database;
+using Microsoft.EntityFrameworkCore;
 DotNetEnv.Env.Load();
 
 // Env.load();
@@ -41,7 +42,7 @@ app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-    database.Database.EnsureCreated();
+    database.Database.Migrate();
 }
 
 app.MapControllers();

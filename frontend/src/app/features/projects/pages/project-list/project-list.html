@@ -12,11 +12,14 @@
         placeholder="Buscar en todos los proyectos…"
         (changed)="searchTerm.set($event)"
       />
-      <button class="primary-action" type="button" (click)="createDialogOpen.set(true)">
+      <button class="primary-action" type="button" (click)="openCreateDialog()">
         <svg lucideFilePlus2 [size]="19"></svg>Nuevo proyecto
       </button>
     </div>
-    <app-project-table [projects]="filteredProjects()" />
+    @if (errorMessage()) {
+      <p class="project-error" role="alert">{{ errorMessage() }}</p>
+    }
+    <app-project-table [projects]="filteredProjects()" (actionSelected)="handleProjectAction($event)" />
   </section>
 </section>
 
@@ -25,12 +28,38 @@
     <span class="dialog-icon"><svg lucideFilePlus2 [size]="24"></svg></span>
     <div>
       <h2>Empieza con un proyecto nuevo</h2>
-      <p>En el siguiente paso podrás elegir una plantilla o crear un documento vacío.</p>
+      <p>Crea un proyecto vacío para empezar a escribir tu documento.</p>
     </div>
+    <app-ui-form-field label="Nombre del proyecto">
+      <input [value]="draftName()" maxlength="100" (input)="updateDraftName($event)" />
+    </app-ui-form-field>
     <app-ui-modal-actions
-      primaryLabel="Continuar"
+      primaryLabel="Crear proyecto"
+      [primaryDisabled]="isSaving()"
       (cancelled)="createDialogOpen.set(false)"
-      (confirmed)="createDialogOpen.set(false)"
+      (confirmed)="createProject()"
     />
   </div>
 </app-ui-modal>
+
+<app-ui-modal [(visible)]="editDialogOpen" title="Editar proyecto" width="28rem">
+  <div class="create-project-content">
+    <app-ui-form-field label="Nombre del proyecto">
+      <input [value]="draftName()" maxlength="100" (input)="updateDraftName($event)" />
+    </app-ui-form-field>
+    <app-ui-modal-actions
+      primaryLabel="Guardar cambios"
+      [primaryDisabled]="isSaving()"
+      (cancelled)="editDialogOpen.set(false)"
+      (confirmed)="updateProject()"
+    />
+  </div>
+</app-ui-modal>
+
+<app-ui-confirm-dialog
+  [(visible)]="deleteDialogOpen"
+  title="Archivar proyecto"
+  [message]="'El proyecto ' + (selectedProject()?.title ?? '') + ' dejará de aparecer en la lista activa.'"
+  confirmLabel="Archivar"
+  (confirmed)="confirmArchive()"
+/>

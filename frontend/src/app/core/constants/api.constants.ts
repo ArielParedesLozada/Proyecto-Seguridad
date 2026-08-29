@@ -5,4 +5,9 @@ export const API_ROUTES = {
     me: '/auth/me',
     logout: '/auth/logout',
   },
+  projects: {
+    root: '/projects',
+    byId: (id: string) => `/projects/${encodeURIComponent(id)}`,
+    copy: (id: string) => `/projects/${encodeURIComponent(id)}/copy`,
+  },
 } as const;

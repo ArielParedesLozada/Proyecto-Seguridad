@@ -1,7 +1,8 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { UiEmptyStateComponent } from '../../../../shared/components/ui-empty-state/ui-empty-state';
 import { Project } from '../../models/project.interface';
 import { ProjectTableRowComponent } from '../project-table-row/project-table-row';
+import { ProjectAction } from '../project-action-menu/project-action-menu';
 
 type SortKey = 'title' | 'owner' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
@@ -15,6 +16,7 @@ type SortDirection = 'asc' | 'desc';
 })
 export class ProjectTableComponent {
   readonly projects = input.required<Project[]>();
+  readonly actionSelected = output<{ project: Project; action: ProjectAction }>();
   readonly sortKey = signal<SortKey | null>(null);
   readonly sortDirection = signal<SortDirection>('desc');
   readonly selectedIds = signal<ReadonlySet<string>>(new Set());

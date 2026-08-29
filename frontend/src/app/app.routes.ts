@@ -19,6 +19,7 @@ export const routes: Routes = [
   {
     path: 'editor/:projectId',
     component: EditorLayoutComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'projects',
