@@ -17,9 +17,10 @@ public enum ProjectFileResultStatus
 
 public record ProjectFileResult<T>(ProjectFileResultStatus Status, T? Value = default);
 
-public class ProjectFileService(AppDatabase database)
+public class ProjectFileService(AppDatabase database, ILogger<ProjectFileService> logger)
 {
     private readonly AppDatabase _database = database;
+    private readonly ILogger<ProjectFileService> _logger = logger;
 
     public async Task<ProjectFileResult<List<ProjectFileTreeResponse>>> GetFilesAsync(Guid projectId, Guid userId)
     {
@@ -129,6 +130,13 @@ public class ProjectFileService(AppDatabase database)
             .SingleOrDefaultAsync();
         if (file is null)
             return new(ProjectFileResultStatus.Forbidden);
+
+        var contentChanged = !string.Equals(file.Content, request.Content, StringComparison.Ordinal);
+        _logger.LogInformation(
+            "Saving content for project file {ProjectFileId}. ContentLength: {ContentLength}. ContentChanged: {ContentChanged}",
+            fileId,
+            request.Content?.Length,
+            contentChanged);
 
         file.Content = request.Content;
         file.UpdatedAt = DateTimeOffset.UtcNow;

@@ -51,13 +51,11 @@ public class MarkdownToPdfConverter : IDocumentConverter
     private static readonly MarkdownPipeline MarkdownPipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .UseMathematics()
+        .DisableHtml()
         .Build();
 
     public async Task<byte[]> ConvertMarkdownToPdfAsync(string markdown, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(markdown))
-            throw new ArgumentException("El contenido Markdown no puede estar vacío.", nameof(markdown));
-
         var htmlBody = Markdown.ToHtml(markdown, MarkdownPipeline);
 
         var htmlDocument = $$"""
@@ -65,6 +63,7 @@ public class MarkdownToPdfConverter : IDocumentConverter
         <html lang="es">
         <head>
             <meta charset="utf-8" />
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src data:;" />
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
             <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
             <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>

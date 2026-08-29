@@ -50,13 +50,21 @@
           <app-editor-workspace
             [selectedFile]="activeEditorFile()"
             [canEdit]="canEdit()"
+            [savedFileId]="savedFileId()"
+            [saveVersion]="saveVersion()"
             (contentSaved)="saveContent($event)"
+            (recompileRequested)="compileProject()"
             (commentRequested)="openCommentsPanel()"
           ></app-editor-workspace>
         </section>
 
         <section secondary class="preview-panel" aria-label="Vista previa PDF">
-          <app-editor-pdf-preview></app-editor-pdf-preview>
+          <app-editor-pdf-preview
+            [pdfUrl]="pdfUrl()"
+            [status]="pdfStatus()"
+            [errorMessage]="pdfError()"
+            (recompileRequested)="compileProject()"
+          ></app-editor-pdf-preview>
         </section>
       </app-ui-split-pane>
     </app-ui-split-pane>

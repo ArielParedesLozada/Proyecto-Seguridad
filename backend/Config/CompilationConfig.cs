@@ -12,7 +12,7 @@ public static class CompilationConfig
 {
     public static IServiceCollection AddCompilation(this IServiceCollection services)
     {
-        services.AddScoped<IDocumentConverter, MarkdownToPdfConverter>();
+        services.AddSingleton<IDocumentConverter, MarkdownToPdfConverter>();
         return services;
     }
 }

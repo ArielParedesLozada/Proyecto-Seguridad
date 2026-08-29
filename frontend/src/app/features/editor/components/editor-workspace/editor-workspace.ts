@@ -39,6 +39,7 @@ import { UiTabsComponent, UiTab } from '../../../../shared/components/ui-tabs/ui
 import { UiTooltipComponent } from '../../../../shared/components/ui-tooltip/ui-tooltip';
 import { EditorVisualDocumentComponent } from '../editor-visual-document/editor-visual-document';
 import { ProjectFile } from '../../models/project-file.interface';
+import { KeyboardShortcutService } from '../../../../core/shortcuts/keyboard-shortcut.service';
 
 type ToolbarMenu = 'heading' | 'math' | 'list' | 'overflow' | null;
 type OverflowSubmenu = Exclude<ToolbarMenu, 'overflow' | null>;
@@ -80,6 +81,7 @@ type TextMatch = { start: number; end: number };
 })
 export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
   private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly shortcutService = inject(KeyboardShortcutService);
   private resizeObserver: ResizeObserver | null = null;
 
   @ViewChild('toolbarOverflow') private toolbarOverflow?: ElementRef<HTMLElement>;
@@ -88,8 +90,11 @@ export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
 
   readonly selectedFile = input<ProjectFile | null>(null);
   readonly canEdit = input(false);
+  readonly savedFileId = input<string | null>(null);
+  readonly saveVersion = input(0);
   readonly activeFileChanged = output<string | null>();
   readonly contentSaved = output<{ id: string; content: string }>();
+  readonly recompileRequested = output<void>();
   readonly commentRequested = output<void>();
   readonly tabs = signal<UiTab[]>([]);
   readonly activeFileId = signal<string | null>(null);
@@ -149,6 +154,11 @@ export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
     effect(() => {
       const file = this.selectedFile();
       if (file) this.openFile(file);
+    });
+    effect(() => {
+      const fileId = this.savedFileId();
+      if (!this.saveVersion() || !fileId) return;
+      this.tabs.update((tabs) => tabs.map((tab) => tab.id === fileId ? { ...tab, dirty: false } : tab));
     });
     effect(() => {
       const matchCount = this.documentMatches().length;
@@ -316,16 +326,26 @@ export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   onDocumentKeydown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+    if (this.shortcutService.matches(event, 'SAVE_DOCUMENT')) {
       event.preventDefault();
       const fileId = this.activeFileId();
-      if (fileId && this.canEdit()) this.contentSaved.emit({ id: fileId, content: this.activeContent() });
+      if (fileId && this.canEdit()) {
+        const content = this.codeInput?.nativeElement.value ?? this.activeContent();
+        this.fileContents.update((contents) => ({ ...contents, [fileId]: content }));
+        this.contentSaved.emit({ id: fileId, content });
+      }
       return;
     }
 
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+    if (this.shortcutService.matches(event, 'FIND')) {
       event.preventDefault();
       this.openDocumentSearch();
+      return;
+    }
+
+    if (this.shortcutService.matches(event, 'RECOMPILE')) {
+      event.preventDefault();
+      this.recompileRequested.emit();
       return;
     }
 
