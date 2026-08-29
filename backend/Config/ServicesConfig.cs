@@ -11,6 +11,7 @@ public static class ServiceConfig
         services.AddScoped<LogoutService>();
         services.AddScoped<MeService>();
         services.AddScoped<ProjectService>();
+        services.AddScoped<ProjectFileService>();
         return services;
     }
 }

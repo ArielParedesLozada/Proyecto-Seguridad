@@ -81,36 +81,47 @@ public class ProjectService(AppDatabase database)
             .Where(member => member.ProjectId == sourceProjectId && member.UserId == userId)
             .Select(member => member.Project.Name)
             .SingleOrDefaultAsync();
-        return sourceName is null ? null : await CreateOwnedProjectAsync(userId, $"{sourceName} - Copia");
+        if (sourceName is null)
+            return null;
+
+        var sourceFiles = await _database.ProjectFiles
+            .AsNoTracking()
+            .Where(file => file.ProjectId == sourceProjectId)
+            .Select(file => new { file.Id, file.ParentId, file.Name, file.Type, file.Content })
+            .ToListAsync();
+
+        var ownerName = await GetOwnerNameAsync(userId);
+        await using var transaction = await _database.Database.BeginTransactionAsync();
+        var project = new Project($"{sourceName} - Copia", userId);
+        _database.Projects.Add(project);
+        _database.ProjectMembers.Add(new ProjectMember(project.Id, userId, Roles.Owner));
+
+        var copies = sourceFiles.ToDictionary(
+            file => file.Id,
+            file => new ProjectFile(file.Name, file.Type, project.Id, null) { Content = file.Content });
+        _database.ProjectFiles.AddRange(copies.Values);
+        foreach (var sourceFile in sourceFiles)
+            copies[sourceFile.Id].ParentId = sourceFile.ParentId is null ? null : copies[sourceFile.ParentId.Value].Id;
+
+        await _database.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return ToOwnerResponse(project, ownerName);
     }
 
     private async Task<ProjectResponse> CreateOwnedProjectAsync(Guid userId, string name)
     {
         EnsureName(name);
-        var ownerName = await _database.Users
-            .AsNoTracking()
-            .Where(user => user.Id == userId)
-            .Select(user => user.Nombre)
-            .SingleOrDefaultAsync()
-            ?? throw new InvalidOperationException("El usuario autenticado no existe.");
+        var ownerName = await GetOwnerNameAsync(userId);
 
         await using var transaction = await _database.Database.BeginTransactionAsync();
         var project = new Project(name, userId);
         _database.Projects.Add(project);
         _database.ProjectMembers.Add(new ProjectMember(project.Id, userId, Roles.Owner));
+        _database.ProjectFiles.Add(new ProjectFile("main.md", ProjectFileType.File, project.Id, null));
         await _database.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return new ProjectResponse
-        {
-            Id = project.Id,
-            Name = project.Name,
-            OwnerName = ownerName,
-            Role = "OWNER",
-            CreatedAt = project.CreatedAt,
-            UpdatedAt = project.UpdatedAt,
-            IsArchived = project.IsArchived,
-        };
+        return ToOwnerResponse(project, ownerName);
     }
 
     private Task<Project?> GetOwnedProjectAsync(Guid projectId, Guid userId) => _database.Projects
@@ -119,14 +130,19 @@ public class ProjectService(AppDatabase database)
             && project.Members.Any(member => member.UserId == userId && member.Role == Roles.Owner))
         .SingleOrDefaultAsync();
 
-    private async Task<ProjectResponse> ToOwnerResponseAsync(Project project)
+    private async Task<string> GetOwnerNameAsync(Guid ownerId) => await _database.Users
+        .AsNoTracking()
+        .Where(user => user.Id == ownerId)
+        .Select(user => user.Nombre)
+        .SingleOrDefaultAsync()
+        ?? throw new InvalidOperationException("El usuario autenticado no existe.");
+
+    private async Task<ProjectResponse> ToOwnerResponseAsync(Project project) =>
+        ToOwnerResponse(project, await GetOwnerNameAsync(project.OwnerId));
+
+    private static ProjectResponse ToOwnerResponse(Project project, string ownerName)
     {
-        var ownerName = await _database.Users
-            .AsNoTracking()
-            .Where(user => user.Id == project.OwnerId)
-            .Select(user => user.Nombre)
-            .SingleAsync();
-        return new ProjectResponse
+        return new()
         {
             Id = project.Id,
             Name = project.Name,

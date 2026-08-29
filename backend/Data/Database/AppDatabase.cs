@@ -8,6 +8,7 @@ public class AppDatabase(DbContextOptions<AppDatabase> options) : DbContext(opti
     public DbSet<User> Users { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectMember> ProjectMembers { get; set; }
+    public DbSet<ProjectFile> ProjectFiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,6 +50,26 @@ public class AppDatabase(DbContextOptions<AppDatabase> options) : DbContext(opti
                 .WithMany(u => u.ProjectMemberships)
                 .HasForeignKey(pm => pm.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ProjectFile>(entity =>
+        {
+            entity.ToTable("project_files");
+            entity.HasKey(file => file.Id);
+            entity.Property(file => file.Name).IsRequired();
+            entity.Property(file => file.Type).HasConversion<string>().IsRequired();
+            entity.Property(file => file.Content).HasColumnType("text");
+            entity.Property(file => file.CreatedAt).IsRequired();
+            entity.Property(file => file.UpdatedAt).IsRequired();
+            entity.HasIndex(file => new { file.ProjectId, file.ParentId, file.Name });
+            entity.HasOne(file => file.Project)
+                .WithMany(project => project.Files)
+                .HasForeignKey(file => file.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(file => file.Parent)
+                .WithMany(file => file.Children)
+                .HasForeignKey(file => file.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -22,11 +22,16 @@
       <section primary class="files-panel" aria-label="Archivos del proyecto">
         <app-editor-side-panel
           [view]="activeSidebarOption()"
-          [activeFile]="activeEditorFile()"
+          [files]="projectFiles()"
+          [activeFileId]="activeEditorFile()?.id ?? null"
+          [canEdit]="canEdit()"
           [comments]="comments()"
           [commentFocusRequest]="commentFocusRequest()"
           (closed)="isSidePanelVisible.set(false)"
           (fileSelected)="selectEditorFile($event)"
+          (createRequested)="createFile($event)"
+          (renameRequested)="renameFile($event)"
+          (deleteRequested)="deleteFile($event)"
           (commentAdded)="addComment($event)"
         ></app-editor-side-panel>
       </section>
@@ -44,7 +49,8 @@
         <section primary class="editor-panel" aria-label="Editor LaTeX">
           <app-editor-workspace
             [selectedFile]="activeEditorFile()"
-            (activeFileChanged)="updateActiveEditorFile($event)"
+            [canEdit]="canEdit()"
+            (contentSaved)="saveContent($event)"
             (commentRequested)="openCommentsPanel()"
           ></app-editor-workspace>
         </section>

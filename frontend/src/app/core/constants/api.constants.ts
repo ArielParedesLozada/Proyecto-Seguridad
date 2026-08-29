@@ -9,5 +9,12 @@ export const API_ROUTES = {
     root: '/projects',
     byId: (id: string) => `/projects/${encodeURIComponent(id)}`,
     copy: (id: string) => `/projects/${encodeURIComponent(id)}/copy`,
+    files: {
+      root: (projectId: string) => `/projects/${encodeURIComponent(projectId)}/files`,
+      byId: (projectId: string, fileId: string) =>
+        `/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(fileId)}`,
+      content: (projectId: string, fileId: string) =>
+        `/projects/${encodeURIComponent(projectId)}/files/${encodeURIComponent(fileId)}/content`,
+    },
   },
 } as const;
