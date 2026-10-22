@@ -13,6 +13,8 @@
     lsp.enable = true;
   };
 
+  dotenv.disableHint = true;
+
   packages = with pkgs; [
     nodejs
     pnpm
