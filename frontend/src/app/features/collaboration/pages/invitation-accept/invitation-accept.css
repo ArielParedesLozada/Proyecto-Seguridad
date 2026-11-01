@@ -1,0 +1,43 @@
+.invitation-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--surface-ground);
+}
+
+.invitation-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--overlay-shadow);
+  padding: 2rem;
+  max-width: 28rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--text-color);
+}
+
+.invitation-card h1 {
+  font-size: 1.375rem;
+  margin: 0;
+}
+
+.invitation-card p {
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+.invitation-error {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.hint {
+  font-size: 0.875rem;
+}

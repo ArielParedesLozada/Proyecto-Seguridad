@@ -1,0 +1,42 @@
+<main class="invitation-page">
+  @if (isLoading()) {
+    <app-ui-loading label="Cargando invitación…" />
+  } @else if (errorKind() === 'not-found') {
+    <app-ui-empty-state
+      icon="✕"
+      title="No encontramos esta invitación."
+      description="Verifica que el enlace esté completo o pídele al dueño del proyecto que te invite de nuevo."
+    />
+  } @else if (errorKind() === 'expired') {
+    <app-ui-empty-state
+      icon="⏳"
+      title="Esta invitación ya no es válida."
+      description="Pídele al dueño del proyecto que te invite de nuevo."
+    />
+  } @else if (errorKind() === 'mismatch') {
+    <app-ui-empty-state icon="⚠" [title]="errorMessage()" description="Entraste con otra cuenta de Google.">
+      <app-ui-button label="Cerrar sesión" severity="secondary" [outlined]="true" (pressed)="logout()" />
+    </app-ui-empty-state>
+  } @else if (preview()) {
+    <section class="invitation-card">
+      <app-ui-status-badge
+        [label]="preview()!.status"
+        [tone]="preview()!.status === 'ACCEPTED' ? 'success' : 'neutral'"
+      />
+      <h1>{{ preview()!.projectName }}</h1>
+      <p>
+        <strong>{{ preview()!.invitedByName }}</strong> te invitó con permiso para
+        <strong>{{ preview()!.role === 'EDITOR' ? 'editar' : 'ver' }}</strong>.
+      </p>
+      @if (errorMessage()) {
+        <p class="invitation-error" role="alert">{{ errorMessage() }}</p>
+      }
+      @if (preview()!.status === 'ACCEPTED') {
+        <p class="hint">Ya aceptaste esta invitación.</p>
+        <app-ui-button label="Ir al proyecto" [disabled]="isAccepting()" (pressed)="accept()" />
+      } @else {
+        <app-ui-button label="Aceptar invitación" [disabled]="isAccepting()" (pressed)="accept()" />
+      }
+    </section>
+  }
+</main>
