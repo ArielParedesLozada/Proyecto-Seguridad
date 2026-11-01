@@ -1,0 +1,10 @@
+<form class="invitation-form" (submit)="$event.preventDefault(); submit()">
+  <app-ui-form-field label="Correo del invitado" [error]="validationError() || errorMessage()">
+    <input type="email" [value]="email()" (input)="updateEmail($event)" placeholder="persona@ejemplo.com" />
+  </app-ui-form-field>
+  <app-ui-form-field label="Rol">
+    <app-ui-dropdown [options]="roleOptions" [value]="role()" (changed)="updateRole($event)" />
+  </app-ui-form-field>
+  <p class="google-note">La persona invitada necesita una cuenta de Google para aceptar la invitación.</p>
+  <app-ui-button label="Invitar" [disabled]="isSaving()" (pressed)="submit()" />
+</form>

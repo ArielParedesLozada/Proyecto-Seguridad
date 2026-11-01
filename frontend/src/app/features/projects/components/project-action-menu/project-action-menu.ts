@@ -6,10 +6,11 @@ import {
   LucideFileText,
   LucidePencil,
   LucideTrash2,
+  LucideUserPlus,
 } from '@lucide/angular';
 import { UiTooltipComponent } from '../../../../shared/components/ui-tooltip/ui-tooltip';
 
-export type ProjectAction = 'duplicate' | 'download' | 'export-pdf' | 'edit' | 'archive' | 'delete';
+export type ProjectAction = 'duplicate' | 'download' | 'export-pdf' | 'share' | 'edit' | 'archive' | 'delete';
 
 @Component({
   selector: 'app-project-action-menu',
@@ -21,6 +22,7 @@ export type ProjectAction = 'duplicate' | 'download' | 'export-pdf' | 'edit' | '
     LucideFileText,
     LucidePencil,
     LucideTrash2,
+    LucideUserPlus,
     UiTooltipComponent,
   ],
   templateUrl: './project-action-menu.html',

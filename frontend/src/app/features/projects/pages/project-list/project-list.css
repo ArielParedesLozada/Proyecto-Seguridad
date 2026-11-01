@@ -108,3 +108,8 @@ h1 {
     width: 100%;
   }
 }
+.share-project-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}

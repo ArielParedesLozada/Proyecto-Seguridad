@@ -16,6 +16,10 @@
       <svg lucideFileText [size]="17"></svg></button
   ></app-ui-tooltip>
   @if (canManage()) {
+  <app-ui-tooltip text="Compartir"
+    ><button type="button" aria-label="Compartir" (click)="actionSelected.emit('share')">
+      <svg lucideUserPlus [size]="17"></svg></button
+  ></app-ui-tooltip>
   <app-ui-tooltip text="Editar"
     ><button type="button" aria-label="Editar" (click)="actionSelected.emit('edit')">
       <svg lucidePencil [size]="17"></svg></button

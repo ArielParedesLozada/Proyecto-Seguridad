@@ -1,0 +1,11 @@
+.invitation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.google-note {
+  font-size: 0.8125rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+}

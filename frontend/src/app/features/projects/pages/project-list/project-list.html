@@ -63,3 +63,18 @@
   confirmLabel="Archivar"
   (confirmed)="confirmArchive()"
 />
+
+<app-ui-modal [(visible)]="shareDialogOpen" title="Compartir proyecto" width="32rem">
+  <div class="share-project-content">
+    <app-invitation-form
+      [isSaving]="isInviting()"
+      [errorMessage]="inviteError()"
+      (invited)="invite($event)"
+    />
+    <app-invitation-list
+      [invitations]="invitations()"
+      (revokeRequested)="revokeInvitation($event)"
+      (resendRequested)="resendInvitation($event)"
+    />
+  </div>
+</app-ui-modal>

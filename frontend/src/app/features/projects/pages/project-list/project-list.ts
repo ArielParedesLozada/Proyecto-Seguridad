@@ -6,6 +6,10 @@ import { UiFormFieldComponent } from '../../../../shared/components/ui-form-fiel
 import { UiModalActionsComponent } from '../../../../shared/components/ui-modal-actions/ui-modal-actions';
 import { UiModalComponent } from '../../../../shared/components/ui-modal/ui-modal';
 import { UiSearchInputComponent } from '../../../../shared/components/ui-search-input/ui-search-input';
+import { InvitationFormComponent } from '../../../collaboration/components/invitation-form/invitation-form';
+import { InvitationListComponent } from '../../../collaboration/components/invitation-list/invitation-list';
+import { InvitationService } from '../../../collaboration/data-access/invitation.service';
+import { InvitationResponse, InvitationRole } from '../../../collaboration/models/invitation.interface';
 import { ProjectAction } from '../../components/project-action-menu/project-action-menu';
 import { ProjectTableComponent } from '../../components/project-table/project-table';
 import { ProjectService } from '../../data-access/project.service';
@@ -22,6 +26,8 @@ import { Project, ProjectResponse, SaveProjectRequest } from '../../models/proje
     UiModalComponent,
     UiSearchInputComponent,
     ProjectTableComponent,
+    InvitationFormComponent,
+    InvitationListComponent,
   ],
   templateUrl: './project-list.html',
   styleUrl: './project-list.css',
@@ -29,16 +35,22 @@ import { Project, ProjectResponse, SaveProjectRequest } from '../../models/proje
 export class ProjectListComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly projectService = inject(ProjectService);
+  private readonly invitationService = inject(InvitationService);
 
   readonly createDialogOpen = signal(false);
   readonly editDialogOpen = signal(false);
   readonly deleteDialogOpen = signal(false);
+  readonly shareDialogOpen = signal(false);
   readonly isSaving = signal(false);
   readonly errorMessage = signal('');
   readonly searchTerm = signal('');
   readonly projects = signal<Project[]>([]);
   readonly selectedProject = signal<Project | null>(null);
   readonly draftName = signal('');
+  readonly shareProject = signal<Project | null>(null);
+  readonly invitations = signal<InvitationResponse[]>([]);
+  readonly isInviting = signal(false);
+  readonly inviteError = signal('');
   readonly projectView =
     (this.route.snapshot.data['projectView'] as 'all' | 'mine' | 'shared' | 'archived' | undefined) ?? 'all';
   readonly pageTitle = {
@@ -146,6 +158,61 @@ export class ProjectListComponent implements OnInit {
     }
     if (event.action === 'edit') this.openEditDialog(event.project);
     if (event.action === 'archive' || event.action === 'delete') this.openDeleteDialog(event.project);
+    if (event.action === 'share') await this.openShareDialog(event.project);
+  }
+
+  async openShareDialog(project: Project): Promise<void> {
+    if (project.role !== 'OWNER') return;
+    this.shareProject.set(project);
+    this.inviteError.set('');
+    this.shareDialogOpen.set(true);
+    await this.loadInvitations(project.id);
+  }
+
+  async invite(request: { email: string; role: InvitationRole }): Promise<void> {
+    const project = this.shareProject();
+    if (!project) return;
+    this.isInviting.set(true);
+    try {
+      await this.invitationService.invite(project.id, request);
+    } catch (error) {
+      this.inviteError.set(this.readError(error));
+    } finally {
+      this.isInviting.set(false);
+      await this.loadInvitations(project.id);
+    }
+  }
+
+  async revokeInvitation(invitationId: string): Promise<void> {
+    const project = this.shareProject();
+    if (!project) return;
+    try {
+      await this.invitationService.revoke(project.id, invitationId);
+    } catch (error) {
+      this.inviteError.set(this.readError(error));
+    } finally {
+      await this.loadInvitations(project.id);
+    }
+  }
+
+  async resendInvitation(invitationId: string): Promise<void> {
+    const project = this.shareProject();
+    if (!project) return;
+    try {
+      await this.invitationService.resend(project.id, invitationId);
+    } catch (error) {
+      this.inviteError.set(this.readError(error));
+    } finally {
+      await this.loadInvitations(project.id);
+    }
+  }
+
+  private async loadInvitations(projectId: string): Promise<void> {
+    try {
+      this.invitations.set(await this.invitationService.getInvitations(projectId));
+    } catch (error) {
+      this.inviteError.set(this.readError(error));
+    }
   }
 
   private async loadProjects(): Promise<void> {
