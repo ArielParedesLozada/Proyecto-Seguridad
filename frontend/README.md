@@ -71,6 +71,11 @@ frontend/
             │   ├── components/project-table/  project-table-row/  project-action-menu/
             │   ├── data-access/project.service.ts
             │   └── models/project.interface.ts
+            ├── collaboration/
+            │   ├── pages/invitation-accept/              # pantalla del enlace del correo
+            │   ├── components/invitation-form/  invitation-list/   # tontos
+            │   ├── data-access/invitation.service.ts
+            │   └── models/invitation.interface.ts
             ├── editor/
             │   ├── components/editor-toolbar/  editor-sidebar/  editor-side-panel/
             │   │              editor-workspace/  editor-visual-document/
@@ -241,6 +246,7 @@ Todas en `src/app/app.routes.ts`, eager:
 | `''` | `RegisterComponent` | — |
 | `login` | `LoginComponent` | — |
 | `editor/:projectId` | `EditorLayoutComponent` | `authGuard` |
+| `invitations/:token` | `InvitationAcceptComponent` | `authGuard` |
 | `projects` | `AppLayoutComponent` (con hijos) | `authGuard` |
 | `projects` → `''` | `ProjectListComponent`, `data: { projectView: 'all' }` | heredado |
 | `projects/my-projects` | `ProjectListComponent`, `projectView: 'mine'` | heredado |
@@ -265,9 +271,14 @@ Patrones a respetar:
 - La sesión es la cookie HttpOnly del backend. **El frontend no guarda tokens**
   ni en `localStorage` ni en `sessionStorage`.
 - `authGuard` (`core/auth/auth.guard.ts`) hace `fetch('/api/auth/me')` y
-  redirige a `/login` con `router.createUrlTree(['/login'])` si falla.
-  En servidor (`!isPlatformBrowser`) devuelve `true`: la protección real ocurre
-  tras la hidratación.
+  redirige a `/login` con `router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })`
+  si falla, para volver a la misma URL tras autenticarse (clave para el enlace
+  de invitación por correo, que llega sin sesión). En servidor
+  (`!isPlatformBrowser`) devuelve `true`: la protección real ocurre tras la
+  hidratación.
+- `google-auth-button` recibe `returnUrl` como `input()` y lo añade codificado
+  a `GET /api/auth/login?returnUrl=...`. El backend valida que sea una ruta
+  relativa (`IsSafeReturnUrl`); cualquier otra cosa cae a `/projects`.
 - `AuthService` cachea el usuario en una signal; `loadCurrentUser()` es
   idempotente (sale si ya hay usuario) y solo corre en navegador.
   `logout()` vive en `app-layout`: limpia la signal, hace `POST /auth/logout` y
@@ -393,13 +404,12 @@ Checklist antes de dar algo por terminado:
 ## 9. Pendientes (ver `TODO.md` en la raíz)
 
 Listo: editor Markdown → PDF, compilación automática al guardar, CRUD de
-proyectos, árbol de archivos, guardado persistente, atajos globales.
+proyectos, árbol de archivos, guardado persistente, atajos globales, feature
+**`collaboration`** (invitar, listar, revocar y reenviar desde "Compartir
+proyecto"; pantalla de aceptación en `/invitations/:token`).
 
 Por hacer en el frontend:
 
-- Feature **`collaboration`** (hoy inexistente): formulario de invitación por
-  correo, listado de miembros con rol, y pantalla de aceptación de invitación.
-  Seguir la estructura `pages/ components/ data-access/ models/`.
 - **Edición en tiempo real**: hoy `saveContent` es un `PUT` del contenido
   completo del archivo. Necesitará un canal push (SignalR/WebSocket) y
   resolución de conflictos; `editor-workspace` mantiene el contenido en

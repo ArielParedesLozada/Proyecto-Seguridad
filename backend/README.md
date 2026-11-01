@@ -17,6 +17,7 @@ API web en **.NET 8 (ASP.NET Core)** del proyecto de Seguridad (clon de Overleaf
 | Auth | Cookie de sesión (`overleaf_session`) + Google OAuth2 |
 | Markdown → HTML | `Markdig` |
 | HTML → PDF | `PuppeteerSharp` (Chromium headless) |
+| Correo | `MailKit` (SMTP real de Gmail, `smtp.gmail.com:587`, StartTls) |
 | Config | Variables de entorno vía `DotNetEnv` (`.env`) + `appsettings.json` |
 
 Namespace raíz: `Backend`. El namespace **siempre** refleja la ruta de carpetas
@@ -59,12 +60,14 @@ backend/
 │   ├── DatabaseConfig.cs           # AddDatabase(connectionString) -> AddDbContext<AppDatabase>(UseNpgsql)
 │   ├── AuthConfig.cs               # AddAuth(...): cookie + Google, CORS, FrontendOptions
 │   ├── ServicesConfig.cs           # AddServices(): registra TODOS los servicios de App/ como Scoped
-│   └── CompilationConfig.cs        # AddCompilation(): IDocumentConverter -> MarkdownToPdfConverter (Singleton)
+│   ├── CompilationConfig.cs        # AddCompilation(): IDocumentConverter -> MarkdownToPdfConverter (Singleton)
+│   └── MailConfig.cs               # AddMailer(...): INotifier -> EmailNotifier (Scoped)
 │
 ├── Domain/
-│   ├── Models/                     # Project, ProjectFile, ProjectMember, User
-│   ├── Enums/                      # Roles {Owner,Editor,Viewer}, ProjectFileType {File,Folder}
-│   └── Services/                   # Contratos: IDocumentConverter
+│   ├── Models/                     # Project, ProjectFile, ProjectMember, User, ProjectInvitation
+│   ├── Enums/                      # Roles {Owner,Editor,Viewer}, ProjectFileType {File,Folder},
+│   │                               # InvitationStatus {Pending,Accepted,Revoked}
+│   └── Services/                   # Contratos: IDocumentConverter, INotifier
 │
 ├── Data/
 │   ├── Database/AppDatabase.cs     # DbSets + OnModelCreating (tablas snake_case, índices, FKs, conversiones)
@@ -79,18 +82,24 @@ backend/
 │   ├── Projects/
 │   │   ├── ProjectService.cs       # CRUD, archivar, copiar (con transacción)
 │   │   ├── ProjectFileService.cs   # CRUD del árbol de archivos + validaciones de nombre
-│   │   └── ProjectCompilationService.cs  # Autoriza y delega en IDocumentConverter
+│   │   ├── ProjectCompilationService.cs  # Autoriza y delega en IDocumentConverter
+│   │   └── ProjectInvitationService.cs   # Crear/listar/revocar/reenviar/aceptar invitaciones
 │   └── Dtos/                       # DTOs internos de App (hoy casi vacío)
 │
 ├── Infrastructure/
-│   └── Compilation/MarkdownToPdfConverter.cs   # Markdig + PuppeteerSharp
+│   ├── Compilation/MarkdownToPdfConverter.cs   # Markdig + PuppeteerSharp
+│   └── Mail/EmailNotifier.cs       # INotifier vía MailKit (SMTP)
 │
 └── Presentation/
     ├── Controllers/                # AuthController, ProjectsController, ProjectFilesController,
-    │                               # ProjectCompilationController
+    │                               # ProjectCompilationController, ProjectInvitationsController,
+    │                               # InvitationsController
     └── Dtos/
-        ├── Requests/               # CreateProjectRequest, UpdateProjectFileContentRequest, …
-        └── Responses/              # ProjectResponse, ProjectFileResponse, MeResponse, …
+        ├── Requests/               # CreateProjectRequest, UpdateProjectFileContentRequest,
+        │                           # CreateInvitationRequest, …
+        └── Responses/              # ProjectResponse, ProjectFileResponse, MeResponse,
+                                     # InvitationResponse, InvitationPreviewResponse,
+                                     # AcceptInvitationResponse, …
 ```
 
 ---
@@ -208,6 +217,7 @@ User 1──N Project         (OwnerId, DeleteBehavior.Restrict)
 User N──N Project         vía ProjectMember (PK compuesta ProjectId+UserId, Role)
 Project 1──N ProjectFile  (Cascade)
 ProjectFile 1──N ProjectFile (ParentId autorreferencial, Cascade) → árbol
+Project 1──N ProjectInvitation (Cascade; TokenHash único; InvitedBy → User, Restrict)
 ```
 
 ---
@@ -263,7 +273,7 @@ fallback `http://localhost:4200`. Credenciales por cookie ⇒ **no se puede usar
 
 | Método | Ruta | Auth | Notas |
 |---|---|---|---|
-| GET | `/auth/login` | — | Redirige a Google |
+| GET | `/auth/login?returnUrl=` | — | Redirige a Google; `returnUrl` debe ser una ruta relativa del frontend o cae a `/projects` |
 | GET | `/auth/me` | sesión | `MeResponse` o 401 |
 | POST | `/auth/logout` | — | 204 |
 | GET | `/projects?archived=false` | sesión | Stream `IAsyncEnumerable<ProjectResponse>` |
@@ -279,6 +289,12 @@ fallback `http://localhost:4200`. Credenciales por cookie ⇒ **no se puede usar
 | PUT | `/projects/{projectId}/files/{fileId}/content` | editor | Guardar contenido |
 | DELETE | `/projects/{projectId}/files/{fileId}` | editor | Cascade a hijos |
 | POST | `/projects/{projectId}/compile` | miembro | `application/pdf` o 422 |
+| GET | `/projects/{projectId}/invitations` | owner | Lista invitaciones, estado derivado (`EXPIRED`) |
+| POST | `/projects/{projectId}/invitations` | owner | Crea y envía la invitación por correo |
+| POST | `/projects/{projectId}/invitations/{id}/resend` | owner | Nuevo token, invalida el anterior |
+| DELETE | `/projects/{projectId}/invitations/{id}` | owner | Revoca (solo si `PENDING`) |
+| GET | `/invitations/{token}` | sesión | Preview; 404/410/403 según estado |
+| POST | `/invitations/{token}/accept` | sesión | Crea el `ProjectMember`; idempotente |
 
 Detalles que el frontend asume:
 
@@ -317,12 +333,17 @@ Variables de entorno en `backend/.env` (cargadas por `DotNetEnv.Env.Load()`):
 CONNECTION_STRING=Host=localhost;Database=overleaf;Username=...;Password=...
 GOOGLE_OAUTH_CLIENT_ID=...
 GOOGLE_OAUTH_CLIENT_SECRET=...
+MAIL_USER=tucuenta@gmail.com
+MAIL_PASSWORD=...                  # contraseña de aplicación de 16 caracteres (requiere 2FA)
 CHROMIUM_PATH=/ruta/a/chromium     # opcional
 ```
 
-`Program.cs` falla al arrancar si falta `CONNECTION_STRING`, o
-`GOOGLE_OAUTH_CLIENT_ID`/`SECRET` (desde `AddAuth`). Esto es intencional: no hay
-modo degradado.
+`Program.cs` falla al arrancar si falta `CONNECTION_STRING`,
+`GOOGLE_OAUTH_CLIENT_ID`/`SECRET` (desde `AddAuth`), o `MAIL_USER`/`MAIL_PASSWORD`
+(desde `AddMailer`). Esto es intencional: no hay modo degradado. `MAIL_PASSWORD`
+**no** es la contraseña normal de la cuenta de Gmail: hace falta una
+[contraseña de aplicación](https://myaccount.google.com/apppasswords), que exige
+tener 2FA activo.
 
 ```bash
 dotnet run                                   # arranca y aplica migraciones solo
@@ -374,17 +395,12 @@ Checklist antes de dar algo por terminado:
 ## 9. Pendientes (ver `TODO.md` en la raíz)
 
 Listo: editor Markdown → PDF, compilación automática al guardar, CRUD de
-proyectos, árbol de archivos, guardado persistente, atajos de teclado.
+proyectos, árbol de archivos, guardado persistente, atajos de teclado,
+invitaciones a proyectos por correo electrónico (crear, listar, revocar,
+reenviar, aceptar; `ProjectMember` se crea al aceptar).
 
 Por hacer, en orden de dependencia:
 
-- Invitaciones por **correo electrónico** a un proyecto → requiere una interfaz
-  en `Domain/Services/` (p. ej. `IEmailSender`) con implementación en
-  `Infrastructure/`, más una entidad `ProjectInvitation` con token y expiración.
-- Invitar solo como **Editor** o **Viewer** (`Roles` ya lo contempla; falta el
-  flujo de creación de `ProjectMember` al aceptar).
-- Solo los invitados ven el proyecto — ya garantizado por el chequeo de
-  `ProjectMembers`; mantenerlo al añadir endpoints.
 - Edición **en tiempo real** → necesitará un canal push (SignalR/WebSocket) y una
   estrategia de merge; hoy el guardado es `PUT` de contenido completo.
 - Del README raíz, aún sin empezar: control de cambios (autoría/fecha),
