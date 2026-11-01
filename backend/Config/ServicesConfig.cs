@@ -13,6 +13,7 @@ public static class ServiceConfig
         services.AddScoped<ProjectService>();
         services.AddScoped<ProjectFileService>();
         services.AddScoped<ProjectCompilationService>();
+        services.AddScoped<ProjectInvitationService>();
         return services;
     }
 }
