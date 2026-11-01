@@ -29,4 +29,7 @@ export const API_ROUTES = {
     byToken: (token: string) => `/invitations/${encodeURIComponent(token)}`,
     accept: (token: string) => `/invitations/${encodeURIComponent(token)}/accept`,
   },
+  crypto: {
+    session: '/crypto/session',
+  },
 } as const;
