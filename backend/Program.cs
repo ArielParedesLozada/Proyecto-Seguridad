@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Backend.Config;
 using Backend.Data.Database;
+using Backend.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
 DotNetEnv.Env.Load();
 
@@ -43,6 +44,7 @@ app.UseForwardedHeaders();
 app.UseCors(AuthConfig.CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<CryptoEnvelopeMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
