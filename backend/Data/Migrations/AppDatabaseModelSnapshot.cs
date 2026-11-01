@@ -91,6 +91,61 @@ namespace backend.Data.Migrations
                     b.ToTable("project_files", (string)null);
                 });
 
+            modelBuilder.Entity("Backend.Domain.Models.ProjectInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("AcceptedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("InvitedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitedById");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId", "Email", "Status");
+
+                    b.ToTable("project_invitations", (string)null);
+                });
+
             modelBuilder.Entity("Backend.Domain.Models.ProjectMember", b =>
                 {
                     b.Property<Guid>("ProjectId")
@@ -171,6 +226,25 @@ namespace backend.Data.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("Backend.Domain.Models.ProjectInvitation", b =>
+                {
+                    b.HasOne("Backend.Domain.Models.User", "InvitedBy")
+                        .WithMany()
+                        .HasForeignKey("InvitedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Domain.Models.Project", "Project")
+                        .WithMany("Invitations")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InvitedBy");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("Backend.Domain.Models.ProjectMember", b =>
                 {
                     b.HasOne("Backend.Domain.Models.Project", "Project")
@@ -193,6 +267,8 @@ namespace backend.Data.Migrations
             modelBuilder.Entity("Backend.Domain.Models.Project", b =>
                 {
                     b.Navigation("Files");
+
+                    b.Navigation("Invitations");
 
                     b.Navigation("Members");
                 });

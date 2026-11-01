@@ -9,6 +9,7 @@ public class AppDatabase(DbContextOptions<AppDatabase> options) : DbContext(opti
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectMember> ProjectMembers { get; set; }
     public DbSet<ProjectFile> ProjectFiles { get; set; }
+    public DbSet<ProjectInvitation> ProjectInvitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,6 +71,28 @@ public class AppDatabase(DbContextOptions<AppDatabase> options) : DbContext(opti
                 .WithMany(file => file.Children)
                 .HasForeignKey(file => file.ParentId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProjectInvitation>(entity =>
+        {
+            entity.ToTable("project_invitations");
+            entity.HasKey(invitation => invitation.Id);
+            entity.Property(invitation => invitation.Email).IsRequired();
+            entity.Property(invitation => invitation.Role).HasConversion<string>().HasMaxLength(16).IsRequired();
+            entity.Property(invitation => invitation.Status).HasConversion<string>().HasMaxLength(16).IsRequired();
+            entity.Property(invitation => invitation.TokenHash).IsRequired().HasMaxLength(64);
+            entity.Property(invitation => invitation.CreatedAt).IsRequired();
+            entity.Property(invitation => invitation.ExpiresAt).IsRequired();
+            entity.HasIndex(invitation => invitation.TokenHash).IsUnique();
+            entity.HasIndex(invitation => new { invitation.ProjectId, invitation.Email, invitation.Status });
+            entity.HasOne(invitation => invitation.Project)
+                .WithMany(project => project.Invitations)
+                .HasForeignKey(invitation => invitation.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(invitation => invitation.InvitedBy)
+                .WithMany()
+                .HasForeignKey(invitation => invitation.InvitedById)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

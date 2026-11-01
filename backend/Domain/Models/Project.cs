@@ -12,4 +12,5 @@ public class Project(string name, Guid ownerId)
     public User Owner { get; set; } = null!;
     public ICollection<ProjectMember> Members { get; set; } = [];
     public ICollection<ProjectFile> Files { get; set; } = [];
+    public ICollection<ProjectInvitation> Invitations { get; set; } = [];
 }
