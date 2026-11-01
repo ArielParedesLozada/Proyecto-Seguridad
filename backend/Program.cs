@@ -14,12 +14,15 @@ builder.Services.AddSwaggerGen();
 var CONNECTION_STRING = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 var GOOGLE_OAUTH_CLIENT_ID = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CLIENT_ID")!;
 var GOOGLE_OAUTH_CLIENT_SECRET = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CLIENT_SECRET")!;
+var MAIL_USER = Environment.GetEnvironmentVariable("MAIL_USER")!;
+var MAIL_PASSWORD = Environment.GetEnvironmentVariable("MAIL_PASSWORD")!;
 if (string.IsNullOrWhiteSpace(CONNECTION_STRING))
     throw new InvalidOperationException("Falta la cadena de conexión 'Default' en la configuración.");
 builder.Services
     .AddDatabase(CONNECTION_STRING)
     .AddServices()
     .AddCompilation()
+    .AddMailer(builder.Configuration, MAIL_USER, MAIL_PASSWORD)
     .AddAuth(GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, builder.Configuration);
 builder.Services.AddControllers().AddJsonOptions(o =>
 {

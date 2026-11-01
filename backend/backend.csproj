@@ -27,6 +27,8 @@
     <PackageReference Include="Markdig" Version="0.37.0" />
     <!-- Generación de PDF a partir de HTML (Chromium gestionado por la librería) -->
     <PackageReference Include="PuppeteerSharp" Version="20.2.6" />
+    <!-- Envío de correo -->
+    <PackageReference Include="MailKit" Version="4.15.1" />
 
   </ItemGroup>
 
