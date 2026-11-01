@@ -17,9 +17,11 @@ public enum ProjectFileResultStatus
 
 public record ProjectFileResult<T>(ProjectFileResultStatus Status, T? Value = default);
 
-public class ProjectFileService(AppDatabase database, ILogger<ProjectFileService> logger)
+public class ProjectFileService(
+    AppDatabase database, EncryptedColumnStore encryptedColumnStore, ILogger<ProjectFileService> logger)
 {
     private readonly AppDatabase _database = database;
+    private readonly EncryptedColumnStore _encryptedColumnStore = encryptedColumnStore;
     private readonly ILogger<ProjectFileService> _logger = logger;
 
     public async Task<ProjectFileResult<List<ProjectFileTreeResponse>>> GetFilesAsync(Guid projectId, Guid userId)
@@ -60,15 +62,16 @@ public class ProjectFileService(AppDatabase database, ILogger<ProjectFileService
                 ParentId = file.ParentId,
                 Name = file.Name,
                 Type = file.Type == ProjectFileType.File ? "FILE" : "FOLDER",
-                Content = file.Content,
                 CreatedAt = file.CreatedAt,
                 UpdatedAt = file.UpdatedAt,
             })
             .SingleOrDefaultAsync();
 
-        return file is null
-            ? new(ProjectFileResultStatus.Forbidden)
-            : new(ProjectFileResultStatus.Success, file);
+        if (file is null)
+            return new(ProjectFileResultStatus.Forbidden);
+
+        file.Content = await _encryptedColumnStore.ReadProjectFileContentAsync(fileId, CancellationToken.None);
+        return new(ProjectFileResultStatus.Success, file);
     }
 
     public async Task<ProjectFileResult<ProjectFileResponse>> CreateFileAsync(
@@ -90,6 +93,7 @@ public class ProjectFileService(AppDatabase database, ILogger<ProjectFileService
         var file = new ProjectFile(request.Name, type, projectId, request.ParentId);
         _database.ProjectFiles.Add(file);
         await _database.SaveChangesAsync();
+        await _encryptedColumnStore.WriteProjectFileContentAsync(file.Id, file.Content, CancellationToken.None);
         return new(ProjectFileResultStatus.Success, ToFileResponse(file));
     }
 
@@ -115,6 +119,7 @@ public class ProjectFileService(AppDatabase database, ILogger<ProjectFileService
         file.Name = request.Name;
         file.UpdatedAt = DateTimeOffset.UtcNow;
         await _database.SaveChangesAsync();
+        file.Content = await _encryptedColumnStore.ReadProjectFileContentAsync(fileId, CancellationToken.None);
         return new(ProjectFileResultStatus.Success, ToFileResponse(file));
     }
 
@@ -131,16 +136,15 @@ public class ProjectFileService(AppDatabase database, ILogger<ProjectFileService
         if (file is null)
             return new(ProjectFileResultStatus.Forbidden);
 
-        var contentChanged = !string.Equals(file.Content, request.Content, StringComparison.Ordinal);
         _logger.LogInformation(
-            "Saving content for project file {ProjectFileId}. ContentLength: {ContentLength}. ContentChanged: {ContentChanged}",
+            "Saving content for project file {ProjectFileId}. ContentLength: {ContentLength}",
             fileId,
-            request.Content?.Length,
-            contentChanged);
+            request.Content?.Length);
 
-        file.Content = request.Content;
         file.UpdatedAt = DateTimeOffset.UtcNow;
         await _database.SaveChangesAsync();
+        await _encryptedColumnStore.WriteProjectFileContentAsync(fileId, request.Content, CancellationToken.None);
+        file.Content = request.Content;
         return new(ProjectFileResultStatus.Success, ToFileResponse(file));
     }
 

@@ -16,10 +16,10 @@ public class ProjectsController(ProjectService projectService) : ControllerBase
     private readonly ProjectService _projectService = projectService;
 
     [HttpGet]
-    public ActionResult<IAsyncEnumerable<ProjectResponse>> GetProjects([FromQuery] bool archived = false)
+    public async Task<ActionResult<List<ProjectResponse>>> GetProjects([FromQuery] bool archived = false)
     {
         if (!TryGetCurrentUserId(out var userId)) return Unauthorized();
-        return Ok(_projectService.GetProjectsAsync(userId, archived));
+        return Ok(await _projectService.GetProjectsAsync(userId, archived));
     }
 
     [HttpGet("{id:guid}")]

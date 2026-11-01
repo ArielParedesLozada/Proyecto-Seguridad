@@ -29,9 +29,14 @@ public enum ProjectInvitationResultStatus
 public record ProjectInvitationResult<T>(ProjectInvitationResultStatus Status, T? Value = default);
 
 public class ProjectInvitationService(
-    AppDatabase database, INotifier notifier, IOptions<FrontendOptions> frontendOptions, ILogger<ProjectInvitationService> logger)
+    AppDatabase database,
+    EncryptedColumnStore encryptedColumnStore,
+    INotifier notifier,
+    IOptions<FrontendOptions> frontendOptions,
+    ILogger<ProjectInvitationService> logger)
 {
     private readonly AppDatabase _database = database;
+    private readonly EncryptedColumnStore _encryptedColumnStore = encryptedColumnStore;
     private readonly INotifier _notifier = notifier;
     private readonly FrontendOptions _frontendOptions = frontendOptions.Value;
     private readonly ILogger<ProjectInvitationService> _logger = logger;
@@ -81,10 +86,11 @@ public class ProjectInvitationService(
         var response = ToResponse(newInvitation);
         try
         {
+            var projectName = await ReadProjectNameAsync(projectId);
             var inviterName = await GetUserNameAsync(userId);
             var link = $"{_frontendOptions.BaseUrl}/invitations/{token}";
-            var body = BuildInvitationBody(project.Name, inviterName, role, link);
-            await _notifier.SendAsync(email, $"Invitación para colaborar en {project.Name}", body);
+            var body = BuildInvitationBody(projectName, inviterName, role, link);
+            await _notifier.SendAsync(email, $"Invitación para colaborar en {projectName}", body);
         }
         catch (Exception exception)
         {
@@ -161,10 +167,11 @@ public class ProjectInvitationService(
         var response = ToResponse(invitation);
         try
         {
+            var projectName = await ReadProjectNameAsync(invitation.ProjectId);
             var inviterName = await GetUserNameAsync(userId);
             var link = $"{_frontendOptions.BaseUrl}/invitations/{token}";
-            var body = BuildInvitationBody(invitation.Project.Name, inviterName, invitation.Role, link);
-            await _notifier.SendAsync(invitation.Email, $"Invitación para colaborar en {invitation.Project.Name}", body);
+            var body = BuildInvitationBody(projectName, inviterName, invitation.Role, link);
+            await _notifier.SendAsync(invitation.Email, $"Invitación para colaborar en {projectName}", body);
         }
         catch (Exception exception)
         {
@@ -184,14 +191,16 @@ public class ProjectInvitationService(
         if (IsExpiredOrRevoked(invitation))
             return new(ProjectInvitationResultStatus.Expired);
 
+        var projectName = await ReadProjectNameAsync(invitation.ProjectId);
+
         if (invitation.Status == InvitationStatus.Accepted)
-            return new(ProjectInvitationResultStatus.Success, ToPreview(invitation, "ACCEPTED"));
+            return new(ProjectInvitationResultStatus.Success, ToPreview(invitation, projectName, "ACCEPTED"));
 
         var userEmail = await GetUserEmailAsync(userId);
         if (!string.Equals(userEmail, invitation.Email, StringComparison.OrdinalIgnoreCase))
-            return new(ProjectInvitationResultStatus.EmailMismatch, ToPreview(invitation, "PENDING"));
+            return new(ProjectInvitationResultStatus.EmailMismatch, ToPreview(invitation, projectName, "PENDING"));
 
-        return new(ProjectInvitationResultStatus.Success, ToPreview(invitation, "PENDING"));
+        return new(ProjectInvitationResultStatus.Success, ToPreview(invitation, projectName, "PENDING"));
     }
 
     public async Task<ProjectInvitationResult<AcceptInvitationResponse>> AcceptAsync(string token, Guid userId)
@@ -210,6 +219,8 @@ public class ProjectInvitationService(
                 return new(ProjectInvitationResultStatus.EmailMismatch);
         }
 
+        var projectName = await ReadProjectNameAsync(invitation.ProjectId);
+
         var alreadyMember = await _database.ProjectMembers
             .AnyAsync(member => member.ProjectId == invitation.ProjectId && member.UserId == userId);
         if (alreadyMember)
@@ -221,7 +232,7 @@ public class ProjectInvitationService(
                 invitation.AcceptedByUserId = userId;
                 await _database.SaveChangesAsync();
             }
-            return new(ProjectInvitationResultStatus.Success, ToAcceptResponse(invitation));
+            return new(ProjectInvitationResultStatus.Success, ToAcceptResponse(invitation, projectName));
         }
 
         await using var transaction = await _database.Database.BeginTransactionAsync();
@@ -233,7 +244,7 @@ public class ProjectInvitationService(
         await _database.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return new(ProjectInvitationResultStatus.Success, ToAcceptResponse(invitation));
+        return new(ProjectInvitationResultStatus.Success, ToAcceptResponse(invitation, projectName));
     }
 
     private static bool IsExpiredOrRevoked(ProjectInvitation invitation) =>
@@ -298,19 +309,22 @@ public class ProjectInvitationService(
         ExpiresAt = invitation.ExpiresAt,
     };
 
-    private static InvitationPreviewResponse ToPreview(ProjectInvitation invitation, string status) => new()
+    private async Task<string> ReadProjectNameAsync(Guid projectId) =>
+        (await _encryptedColumnStore.ReadProjectNamesAsync([projectId], CancellationToken.None))[projectId];
+
+    private static InvitationPreviewResponse ToPreview(ProjectInvitation invitation, string projectName, string status) => new()
     {
-        ProjectName = invitation.Project.Name,
+        ProjectName = projectName,
         InvitedByName = invitation.InvitedBy.Nombre,
         Email = invitation.Email,
         Role = RoleToString(invitation.Role),
         Status = status,
     };
 
-    private static AcceptInvitationResponse ToAcceptResponse(ProjectInvitation invitation) => new()
+    private static AcceptInvitationResponse ToAcceptResponse(ProjectInvitation invitation, string projectName) => new()
     {
         ProjectId = invitation.ProjectId,
-        ProjectName = invitation.Project.Name,
+        ProjectName = projectName,
         Role = RoleToString(invitation.Role),
     };
 

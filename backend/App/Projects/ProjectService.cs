@@ -7,44 +7,74 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.App.Projects;
 
-public class ProjectService(AppDatabase database)
+public class ProjectService(AppDatabase database, EncryptedColumnStore encryptedColumnStore)
 {
     private readonly AppDatabase _database = database;
+    private readonly EncryptedColumnStore _encryptedColumnStore = encryptedColumnStore;
 
-    public IAsyncEnumerable<ProjectResponse> GetProjectsAsync(Guid userId, bool archived) => _database.ProjectMembers
-        .AsNoTracking()
-        .Where(member => member.UserId == userId && member.Project.IsArchived == archived)
-        .OrderByDescending(member => member.Project.UpdatedAt)
-        .Select(member => new ProjectResponse
-        {
-            Id = member.Project.Id,
-            Name = member.Project.Name,
-            OwnerName = member.Project.Owner.Nombre,
-            Role = member.Role == Roles.Owner
-                ? "OWNER"
-                : member.Role == Roles.Editor ? "EDITOR" : "VIEWER",
-            CreatedAt = member.Project.CreatedAt,
-            UpdatedAt = member.Project.UpdatedAt,
-            IsArchived = member.Project.IsArchived,
-        })
-        .AsAsyncEnumerable();
+    public async Task<List<ProjectResponse>> GetProjectsAsync(Guid userId, bool archived)
+    {
+        var rows = await _database.ProjectMembers
+            .AsNoTracking()
+            .Where(member => member.UserId == userId && member.Project.IsArchived == archived)
+            .OrderByDescending(member => member.Project.UpdatedAt)
+            .Select(member => new
+            {
+                member.Project.Id,
+                member.Project.OwnerId,
+                OwnerName = member.Project.Owner.Nombre,
+                member.Role,
+                member.Project.CreatedAt,
+                member.Project.UpdatedAt,
+                member.Project.IsArchived,
+            })
+            .ToListAsync();
 
-    public Task<ProjectResponse?> GetProjectAsync(Guid projectId, Guid userId) => _database.ProjectMembers
-        .AsNoTracking()
-        .Where(member => member.ProjectId == projectId && member.UserId == userId)
-        .Select(member => new ProjectResponse
+        var names = await _encryptedColumnStore.ReadProjectNamesAsync(
+            rows.Select(row => row.Id).ToList(), CancellationToken.None);
+
+        return rows.Select(row => new ProjectResponse
         {
-            Id = member.Project.Id,
-            Name = member.Project.Name,
-            OwnerName = member.Project.Owner.Nombre,
-            Role = member.Role == Roles.Owner
-                ? "OWNER"
-                : member.Role == Roles.Editor ? "EDITOR" : "VIEWER",
-            CreatedAt = member.Project.CreatedAt,
-            UpdatedAt = member.Project.UpdatedAt,
-            IsArchived = member.Project.IsArchived,
-        })
-        .SingleOrDefaultAsync();
+            Id = row.Id,
+            Name = names[row.Id],
+            OwnerName = row.OwnerName,
+            Role = RoleToString(row.Role),
+            CreatedAt = row.CreatedAt,
+            UpdatedAt = row.UpdatedAt,
+            IsArchived = row.IsArchived,
+        }).ToList();
+    }
+
+    public async Task<ProjectResponse?> GetProjectAsync(Guid projectId, Guid userId)
+    {
+        var row = await _database.ProjectMembers
+            .AsNoTracking()
+            .Where(member => member.ProjectId == projectId && member.UserId == userId)
+            .Select(member => new
+            {
+                member.Project.Id,
+                OwnerName = member.Project.Owner.Nombre,
+                member.Role,
+                member.Project.CreatedAt,
+                member.Project.UpdatedAt,
+                member.Project.IsArchived,
+            })
+            .SingleOrDefaultAsync();
+        if (row is null)
+            return null;
+
+        var names = await _encryptedColumnStore.ReadProjectNamesAsync([row.Id], CancellationToken.None);
+        return new ProjectResponse
+        {
+            Id = row.Id,
+            Name = names[row.Id],
+            OwnerName = row.OwnerName,
+            Role = RoleToString(row.Role),
+            CreatedAt = row.CreatedAt,
+            UpdatedAt = row.UpdatedAt,
+            IsArchived = row.IsArchived,
+        };
+    }
 
     public Task<ProjectResponse> CreateProjectAsync(Guid userId, CreateProjectRequest request) =>
         CreateOwnedProjectAsync(userId, request.Name);
@@ -56,10 +86,12 @@ public class ProjectService(AppDatabase database)
         if (project is null)
             return null;
 
-        project.Name = request.Name;
         project.UpdatedAt = DateTimeOffset.UtcNow;
         await _database.SaveChangesAsync();
-        return await ToOwnerResponseAsync(project);
+        await _encryptedColumnStore.WriteProjectNameAsync(projectId, request.Name, CancellationToken.None);
+
+        var ownerName = await GetOwnerNameAsync(project.OwnerId);
+        return ToOwnerResponse(project, ownerName, request.Name);
     }
 
     public async Task<bool> ArchiveProjectAsync(Guid projectId, Guid userId)
@@ -76,36 +108,39 @@ public class ProjectService(AppDatabase database)
 
     public async Task<ProjectResponse?> CopyProjectAsync(Guid sourceProjectId, Guid userId)
     {
-        var sourceName = await _database.ProjectMembers
-            .AsNoTracking()
-            .Where(member => member.ProjectId == sourceProjectId && member.UserId == userId)
-            .Select(member => member.Project.Name)
-            .SingleOrDefaultAsync();
-        if (sourceName is null)
+        var isMember = await _database.ProjectMembers
+            .AnyAsync(member => member.ProjectId == sourceProjectId && member.UserId == userId);
+        if (!isMember)
             return null;
+
+        var sourceName = (await _encryptedColumnStore.ReadProjectNamesAsync([sourceProjectId], CancellationToken.None))[sourceProjectId];
 
         var sourceFiles = await _database.ProjectFiles
             .AsNoTracking()
             .Where(file => file.ProjectId == sourceProjectId)
-            .Select(file => new { file.Id, file.ParentId, file.Name, file.Type, file.Content })
+            .Select(file => new { file.Id, file.ParentId, file.Name, file.Type })
             .ToListAsync();
 
         var ownerName = await GetOwnerNameAsync(userId);
+        var newName = $"{sourceName} - Copia";
         await using var transaction = await _database.Database.BeginTransactionAsync();
-        var project = new Project($"{sourceName} - Copia", userId);
+        var project = new Project(newName, userId);
         _database.Projects.Add(project);
         _database.ProjectMembers.Add(new ProjectMember(project.Id, userId, Roles.Owner));
 
         var copies = sourceFiles.ToDictionary(
             file => file.Id,
-            file => new ProjectFile(file.Name, file.Type, project.Id, null) { Content = file.Content });
+            file => new ProjectFile(file.Name, file.Type, project.Id, null));
         _database.ProjectFiles.AddRange(copies.Values);
         foreach (var sourceFile in sourceFiles)
             copies[sourceFile.Id].ParentId = sourceFile.ParentId is null ? null : copies[sourceFile.ParentId.Value].Id;
 
         await _database.SaveChangesAsync();
+        await _encryptedColumnStore.WriteProjectNameAsync(project.Id, newName, CancellationToken.None);
+        foreach (var sourceFile in sourceFiles)
+            await _encryptedColumnStore.CopyProjectFileContentAsync(sourceFile.Id, copies[sourceFile.Id].Id, CancellationToken.None);
         await transaction.CommitAsync();
-        return ToOwnerResponse(project, ownerName);
+        return ToOwnerResponse(project, ownerName, newName);
     }
 
     private async Task<ProjectResponse> CreateOwnedProjectAsync(Guid userId, string name)
@@ -117,11 +152,14 @@ public class ProjectService(AppDatabase database)
         var project = new Project(name, userId);
         _database.Projects.Add(project);
         _database.ProjectMembers.Add(new ProjectMember(project.Id, userId, Roles.Owner));
-        _database.ProjectFiles.Add(new ProjectFile("main.md", ProjectFileType.File, project.Id, null));
+        var mainFile = new ProjectFile("main.md", ProjectFileType.File, project.Id, null);
+        _database.ProjectFiles.Add(mainFile);
         await _database.SaveChangesAsync();
+        await _encryptedColumnStore.WriteProjectNameAsync(project.Id, name, CancellationToken.None);
+        await _encryptedColumnStore.WriteProjectFileContentAsync(mainFile.Id, mainFile.Content, CancellationToken.None);
         await transaction.CommitAsync();
 
-        return ToOwnerResponse(project, ownerName);
+        return ToOwnerResponse(project, ownerName, name);
     }
 
     private Task<Project?> GetOwnedProjectAsync(Guid projectId, Guid userId) => _database.Projects
@@ -137,15 +175,12 @@ public class ProjectService(AppDatabase database)
         .SingleOrDefaultAsync()
         ?? throw new InvalidOperationException("El usuario autenticado no existe.");
 
-    private async Task<ProjectResponse> ToOwnerResponseAsync(Project project) =>
-        ToOwnerResponse(project, await GetOwnerNameAsync(project.OwnerId));
-
-    private static ProjectResponse ToOwnerResponse(Project project, string ownerName)
+    private static ProjectResponse ToOwnerResponse(Project project, string ownerName, string name)
     {
         return new()
         {
             Id = project.Id,
-            Name = project.Name,
+            Name = name,
             OwnerName = ownerName,
             Role = "OWNER",
             CreatedAt = project.CreatedAt,
@@ -153,6 +188,13 @@ public class ProjectService(AppDatabase database)
             IsArchived = project.IsArchived,
         };
     }
+
+    private static string RoleToString(Roles role) => role switch
+    {
+        Roles.Owner => "OWNER",
+        Roles.Editor => "EDITOR",
+        _ => "VIEWER",
+    };
 
     private static void EnsureName(string? name)
     {

@@ -14,9 +14,11 @@ public enum ProjectCompilationStatus
 
 public record ProjectCompilationResult(ProjectCompilationStatus Status, byte[]? Pdf = null);
 
-public class ProjectCompilationService(AppDatabase database, IDocumentConverter documentConverter)
+public class ProjectCompilationService(
+    AppDatabase database, EncryptedColumnStore encryptedColumnStore, IDocumentConverter documentConverter)
 {
     private readonly AppDatabase _database = database;
+    private readonly EncryptedColumnStore _encryptedColumnStore = encryptedColumnStore;
     private readonly IDocumentConverter _documentConverter = documentConverter;
 
     public async Task<ProjectCompilationResult> CompileAsync(Guid projectId, Guid userId, CancellationToken cancellationToken)
@@ -27,18 +29,19 @@ public class ProjectCompilationService(AppDatabase database, IDocumentConverter 
         if (!canReadProject)
             return new(ProjectCompilationStatus.Forbidden);
 
-        var mainFile = await _database.ProjectFiles
+        var mainFileId = await _database.ProjectFiles
             .AsNoTracking()
             .Where(file => file.ProjectId == projectId
                 && file.ParentId == null
                 && file.Name == "main.md"
                 && file.Type == ProjectFileType.File)
-            .Select(file => new { file.Content })
+            .Select(file => file.Id)
             .SingleOrDefaultAsync(cancellationToken);
-        if (mainFile is null)
+        if (mainFileId == Guid.Empty)
             return new(ProjectCompilationStatus.MainFileNotFound);
 
-        var pdf = await _documentConverter.ConvertMarkdownToPdfAsync(mainFile.Content ?? string.Empty, cancellationToken);
+        var content = await _encryptedColumnStore.ReadProjectFileContentAsync(mainFileId, cancellationToken);
+        var pdf = await _documentConverter.ConvertMarkdownToPdfAsync(content ?? string.Empty, cancellationToken);
         return new(ProjectCompilationStatus.Success, pdf);
     }
 }

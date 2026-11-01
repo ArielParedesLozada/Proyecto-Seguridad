@@ -1,3 +1,4 @@
+using Backend.Data.Database;
 using Backend.Domain.Services;
 using Backend.Infrastructure.Crypto;
 
@@ -28,6 +29,7 @@ public static class CryptoConfig
         services.AddSingleton(new CryptoMasterKey(masterKey));
         services.AddSingleton<ICipher, AesGcmCipher>();
         services.AddSingleton<ICipherRegistry, CipherRegistry>();
+        services.AddScoped<EncryptedColumnStore>();
         return services;
     }
 }
