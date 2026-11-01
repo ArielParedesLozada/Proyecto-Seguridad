@@ -5,7 +5,7 @@
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-CREATE ROLE overleaf_app LOGIN PASSWORD '<reemplazar-con-una-contraseña-fuerte>';
+CREATE ROLE overleaf_app LOGIN PASSWORD 'PSeguridad_999+556';
 
-GRANT CONNECT ON DATABASE overleaf TO overleaf_app;
+GRANT CONNECT ON DATABASE pseguridad TO overleaf_app;
 GRANT USAGE ON SCHEMA public TO overleaf_app;
