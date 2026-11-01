@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Backend.App.Auth;
 using Backend.App.Projects;
+using Backend.Presentation.Dtos.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,7 @@ public class ProjectCompilationController(
             var result = await _projectCompilationService.CompileAsync(projectId, userId, cancellationToken);
             return result.Status switch
             {
-                ProjectCompilationStatus.Success => File(result.Pdf!, "application/pdf", "document.pdf"),
+                ProjectCompilationStatus.Success => Ok(new CompileResponse { Pdf = Convert.ToBase64String(result.Pdf!) }),
                 ProjectCompilationStatus.MainFileNotFound => UnprocessableEntity(new { error = "El proyecto no tiene un archivo principal main.md." }),
                 _ => Forbid(),
             };
