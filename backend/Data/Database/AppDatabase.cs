@@ -25,7 +25,8 @@ public class AppDatabase(DbContextOptions<AppDatabase> options) : DbContext(opti
         {
             entity.ToTable("projects");
             entity.HasKey(p => p.Id);
-            entity.Property(p => p.Name).IsRequired();
+            entity.Ignore(p => p.Name);
+            entity.Property<byte[]?>("name_cipher");
             entity.Property(p => p.CreatedAt).IsRequired();
             entity.Property(p => p.UpdatedAt).IsRequired();
             entity.HasIndex(p => p.OwnerId);
@@ -59,7 +60,8 @@ public class AppDatabase(DbContextOptions<AppDatabase> options) : DbContext(opti
             entity.HasKey(file => file.Id);
             entity.Property(file => file.Name).IsRequired();
             entity.Property(file => file.Type).HasConversion<string>().IsRequired();
-            entity.Property(file => file.Content).HasColumnType("text");
+            entity.Ignore(file => file.Content);
+            entity.Property<byte[]?>("content_cipher");
             entity.Property(file => file.CreatedAt).IsRequired();
             entity.Property(file => file.UpdatedAt).IsRequired();
             entity.HasIndex(file => new { file.ProjectId, file.ParentId, file.Name });
