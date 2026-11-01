@@ -19,6 +19,7 @@ Seguridad (clon de Overleaf con Markdown → PDF).
 | UI | PrimeNG 22 + tema `@primeng/themes` Aura con preset propio (`ChiperTexPreset`) |
 | Estilos | Tailwind CSS 4 (vía `@tailwindcss/postcss`) + CSS por componente + tokens en `src/styles.css` |
 | Iconos | `@lucide/angular` (componentes standalone importados uno por uno) |
+| Cifrado | Web Crypto (`crypto.subtle`), nativo del navegador — sin dependencia nueva |
 | Tests | Vitest (`ng test`) |
 | Paquetes | **pnpm** (`packageManager: pnpm@11.20.0`) |
 
@@ -49,6 +50,9 @@ frontend/
         │   ├── auth/auth.service.ts            # signal del usuario actual + /auth/me
         │   ├── auth/auth.guard.ts              # CanActivateFn asíncrono contra /auth/me
         │   ├── constants/api.constants.ts      # API_ROUTES: única fuente de URLs
+        │   ├── crypto/                          # cipher.interface, aes-gcm.cipher, cipher-registry,
+        │   │                                    # session-key.service, crypto-transport (ver §5b)
+        │   ├── http/api-client.ts               # request<T>() compartido; el cifrado vive aquí
         │   ├── services/theme.service.ts       # signal darkMode + clase .app-dark en <html>
         │   └── shortcuts/                      # KEYBOARD_SHORTCUTS + KeyboardShortcutService
         │
@@ -177,24 +181,20 @@ this.projects.update((projects) => [this.toProject(created), ...projects]);
 Nunca mutar arrays u objetos en sitio: siempre nuevas referencias.
 
 ### Acceso a datos
-Cada feature tiene su servicio en `data-access/`, con un `private async request<T>()`
-idéntico en todos (`project.service.ts`, `project-file.service.ts`):
+Cada feature tiene su servicio en `data-access/` (`project.service.ts`,
+`project-file.service.ts`, `invitation.service.ts`), que inyecta el `ApiClient`
+compartido (`core/http/api-client.ts`) en vez de repetir su propio
+`request<T>()` — eso ya no se duplica, es **un sitio**, y es ahí donde vive el
+cifrado (ver §5b):
 
 ```ts
-private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_ROUTES.BASE_URL}${path}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...init.headers },
-    ...init,
-  });
+@Injectable({ providedIn: 'root' })
+export class ProjectService {
+  private readonly api = inject(ApiClient);
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => null) as { error?: string; title?: string } | null;
-    throw new Error(body?.error ?? body?.title ?? 'No fue posible completar la operación.');
+  async getProject(id: string): Promise<ProjectResponse> {
+    return this.api.request<ProjectResponse>(API_ROUTES.projects.byId(id));
   }
-
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
 }
 ```
 
@@ -204,11 +204,12 @@ Reglas no negociables:
 - URLs **solo** desde `API_ROUTES` (`core/constants/api.constants.ts`), que usa
   funciones con `encodeURIComponent` para los ids. No concatenar rutas a mano.
 - Los errores del backend (`{ error }` o `{ title }`) se convierten en `Error`
-  con mensaje legible; el componente los captura y los pone en una signal
-  `errorMessage` para mostrarlos.
+  con `.status` (`ApiError`); el componente los captura y los pone en una
+  signal `errorMessage` para mostrarlos.
 - `Promise`, no `Observable`. No introducir `HttpClient` ni RxJS.
 - Respuestas binarias con su propio método (`ProjectCompilationService.compile`
-  devuelve un `Blob` con `Accept: application/pdf`).
+  recibe `{ pdf: "<base64>" }` ya descifrado por `ApiClient` y construye el
+  `Blob` a partir de los bytes decodificados).
 
 ### Tipos del contrato con el backend
 `models/` espeja el JSON del backend y, cuando hace falta, define el modelo de
@@ -286,6 +287,36 @@ Patrones a respetar:
 - Todo código que toque `window`, `document` o `URL.createObjectURL` debe
   comprobar `isPlatformBrowser(this.platformId)` o estar en un hook de navegador,
   porque el andamiaje SSR/prerender existe.
+
+---
+
+## 5b. Cifrado en el cliente
+
+Todo el tráfico de datos (todo salvo `/auth/*` y `/crypto/session`) viaja
+cifrado con AES-256-GCM: `ApiClient` envuelve el cuerpo saliente con
+`CryptoTransport.wrap` y desenvuelve toda respuesta con `unwrap`, usando la
+clave de sesión (`K_session`) que entrega el backend.
+
+- `SessionKeyService` pide `GET /crypto/session` (autenticado) y **guarda la
+  clave solo en memoria**, en una signal — **nunca** en `localStorage` ni
+  `sessionStorage`: ahí sobreviviría al cierre de la pestaña y sería legible
+  por cualquier script de la página. La clave se importa con
+  `extractable: false`, así que tampoco se puede volver a serializar desde
+  JavaScript una vez cargada.
+- `AppLayoutComponent` la carga junto con `loadCurrentUser()` en el
+  constructor y la limpia (`sessionKey.clear()`) en `logout()`.
+- Si el usuario vuelve a entrar con la misma cuenta en otra pestaña, la clave
+  de sesión rota en el backend y la copia en memoria de la pestaña vieja queda
+  obsoleta: todas sus peticiones responderían `400`. `ApiClient` detecta ese
+  `400` en claro (el que genera el middleware, no un error de negocio),
+  vuelve a pedir la clave una vez y reintenta — sin esto, la pestaña vieja se
+  queda rota sin explicación.
+- `crypto.subtle` solo existe en navegador y bajo contexto seguro: todo el
+  código que lo toca va detrás de `isPlatformBrowser`, igual que el resto del
+  proyecto.
+- El `ICipherRegistry`/`cipherRegistry` espeja al del backend: cifra siempre
+  con el algoritmo actual y descifra con el que el sobre indique, que es lo
+  que permite sustituir el algoritmo sin romper nada ya cifrado.
 
 ---
 
@@ -406,7 +437,8 @@ Checklist antes de dar algo por terminado:
 Listo: editor Markdown → PDF, compilación automática al guardar, CRUD de
 proyectos, árbol de archivos, guardado persistente, atajos globales, feature
 **`collaboration`** (invitar, listar, revocar y reenviar desde "Compartir
-proyecto"; pantalla de aceptación en `/invitations/:token`).
+proyecto"; pantalla de aceptación en `/invitations/:token`), y el cifrado del
+tráfico de datos con `K_session` (ver §5b).
 
 Por hacer en el frontend:
 
@@ -417,5 +449,4 @@ Por hacer en el frontend:
 - Los **comentarios** de `editor-comments-view` son estado local en memoria con
   autor fijo (`'Diego'`) y se pierden al recargar: falta backend.
 - `ComingSoonComponent` cubre Plantillas, Papelera y Configuración.
-- Pendiente de la lista general: control de cambios, export/import ZIP y el
-  flujo de encriptación extremo a extremo descrito en el README raíz.
+- Pendiente de la lista general: control de cambios y export/import ZIP.

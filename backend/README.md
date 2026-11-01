@@ -18,6 +18,8 @@ API web en **.NET 8 (ASP.NET Core)** del proyecto de Seguridad (clon de Overleaf
 | Markdown → HTML | `Markdig` |
 | HTML → PDF | `PuppeteerSharp` (Chromium headless) |
 | Correo | `MailKit` (SMTP real de Gmail, `smtp.gmail.com:587`, StartTls) |
+| Cifrado en el cable | `System.Security.Cryptography.AesGcm` (AES-256-GCM, BCL, sin paquete nuevo) |
+| Cifrado en la base | PostgreSQL + extensión `pgcrypto` (funciones `SECURITY DEFINER`) |
 | Config | Variables de entorno vía `DotNetEnv` (`.env`) + `appsettings.json` |
 
 Namespace raíz: `Backend`. El namespace **siempre** refleja la ruta de carpetas
@@ -61,21 +63,25 @@ backend/
 │   ├── AuthConfig.cs               # AddAuth(...): cookie + Google, CORS, FrontendOptions
 │   ├── ServicesConfig.cs           # AddServices(): registra TODOS los servicios de App/ como Scoped
 │   ├── CompilationConfig.cs        # AddCompilation(): IDocumentConverter -> MarkdownToPdfConverter (Singleton)
-│   └── MailConfig.cs               # AddMailer(...): INotifier -> EmailNotifier (Scoped)
+│   ├── MailConfig.cs               # AddMailer(...): INotifier -> EmailNotifier (Scoped)
+│   └── CryptoConfig.cs             # AddCrypto(masterKey): ICipher/ICipherRegistry (Singleton), EncryptedColumnStore (Scoped)
 │
 ├── Domain/
 │   ├── Models/                     # Project, ProjectFile, ProjectMember, User, ProjectInvitation
 │   ├── Enums/                      # Roles {Owner,Editor,Viewer}, ProjectFileType {File,Folder},
 │   │                               # InvitationStatus {Pending,Accepted,Revoked}
-│   └── Services/                   # Contratos: IDocumentConverter, INotifier
+│   └── Services/                   # Contratos: IDocumentConverter, INotifier, ICipher, ICipherRegistry
 │
 ├── Data/
-│   ├── Database/AppDatabase.cs     # DbSets + OnModelCreating (tablas snake_case, índices, FKs, conversiones)
+│   ├── Database/
+│   │   ├── AppDatabase.cs          # DbSets + OnModelCreating (tablas snake_case, índices, FKs, conversiones)
+│   │   └── EncryptedColumnStore.cs # Único punto de acceso a content_cipher/name_cipher
+│   ├── Sql/00-bootstrap.sql        # pgcrypto + rol restringido; lo ejecuta un humano, una vez
 │   └── Migrations/                 # Generadas con dotnet-ef. NO editar a mano
 │
 ├── App/
 │   ├── Auth/
-│   │   ├── AuthClaimTypes.cs       # const UserId = "user_id"  (claim propio, no el de Google)
+│   │   ├── AuthClaimTypes.cs       # const UserId = "user_id", SessionKey = "session_key"
 │   │   ├── LoginService.cs         # Upsert del User a partir del ClaimsPrincipal de Google
 │   │   ├── LogoutService.cs
 │   │   └── MeService.cs
@@ -88,18 +94,21 @@ backend/
 │
 ├── Infrastructure/
 │   ├── Compilation/MarkdownToPdfConverter.cs   # Markdig + PuppeteerSharp
-│   └── Mail/EmailNotifier.cs       # INotifier vía MailKit (SMTP)
+│   ├── Mail/EmailNotifier.cs       # INotifier vía MailKit (SMTP)
+│   └── Crypto/                     # AesGcmCipher, CipherRegistry
 │
 └── Presentation/
     ├── Controllers/                # AuthController, ProjectsController, ProjectFilesController,
     │                               # ProjectCompilationController, ProjectInvitationsController,
-    │                               # InvitationsController
+    │                               # InvitationsController, CryptoController
+    ├── Middleware/CryptoEnvelopeMiddleware.cs  # Descifra la petición, cifra la respuesta
     └── Dtos/
+        ├── CipherEnvelopeDto.cs    # {alg,v,iv,ct}: nombres del cable, traduce desde/hacia CipherEnvelope
         ├── Requests/               # CreateProjectRequest, UpdateProjectFileContentRequest,
         │                           # CreateInvitationRequest, …
         └── Responses/              # ProjectResponse, ProjectFileResponse, MeResponse,
                                      # InvitationResponse, InvitationPreviewResponse,
-                                     # AcceptInvitationResponse, …
+                                     # AcceptInvitationResponse, SessionKeyResponse, CompileResponse, …
 ```
 
 ---
@@ -222,6 +231,49 @@ Project 1──N ProjectInvitation (Cascade; TokenHash único; InvitedBy → Use
 
 ---
 
+## 3b. Flujo de encriptación
+
+Los datos viajan cifrados en los tres tramos — navegador↔API y el almacenamiento
+en la base — con **dos claves independientes, de dos orígenes distintos**:
+
+| | `K_session` | `K_master` |
+|---|---|---|
+| Protege | navegador ↔ API | las columnas cifradas en la base |
+| Origen | 32 bytes aleatorios generados en cada login | `CRYPTO_MASTER_KEY` en `.env` |
+| Vive en | claim de la cookie de sesión + memoria del navegador | entorno del proceso backend |
+| Quién la conoce | backend y ese navegador | backend y, transitoriamente, la base durante la llamada |
+
+Comprometer una no da acceso a la otra. El backend es el único lugar donde
+existen las dos — es, por diseño, la parte confiable: necesita texto claro
+para compilar Markdown, validar nombres y decidir autorización. Esto **no**
+es cifrado extremo a extremo.
+
+**El sobre versionado** es lo que permite cambiar de algoritmo sin perder los
+datos ya cifrados. En el cable: `{ "alg": "AES-256-GCM", "v": 1, "iv": "<base64>", "ct": "<base64>" }`,
+con el tag GCM concatenado al final de `ct` (como lo produce Web Crypto; .NET
+lo separa al descifrar). En la base: un byte de prefijo con el identificador
+de algoritmo (`0x01` = pgcrypto/AES) delante del ciphertext; `decrypt_text`
+lanza excepción ante un identificador desconocido, nunca basura.
+
+`CryptoEnvelopeMiddleware` descifra el cuerpo de la petición con `K_session`
+antes del controller y cifra toda respuesta `application/json` al salir —
+**rutas exentas**: `/auth/*` (el login es navegación del navegador), `/crypto/session`
+(es de donde sale la clave) y `/swagger*`. Sin el claim de sesión deja pasar
+el cuerpo intacto para que `[Authorize]` responda `401`, no un `400` confuso.
+
+**Columnas cifradas, exactamente dos:** `project_files.content_cipher` y
+`projects.name_cipher`, vía las funciones `app_crypto.encrypt_text`/`decrypt_text`
+(`SECURITY DEFINER`, en la migración `AddColumnEncryption`). El rol de la
+aplicación puede ejecutarlas pero **no** tiene `SELECT` sobre esas columnas —
+las lee y escribe únicamente `EncryptedColumnStore`.
+
+**Por qué el resto no se cifra:** `project_files.name`, `project_invitations.email`
+y `users.email` son claves de búsqueda (`WHERE`/`UNIQUE`/igualdad), y
+`pgp_sym_encrypt` es no determinista — cifrarlas exigiría un hash determinista
+al lado, que filtra la igualdad. Es una decisión explícita, no un descuido.
+
+---
+
 ## 4. Autenticación y autorización
 
 **Flujo de login** (sin contraseñas locales; solo Google):
@@ -288,13 +340,18 @@ fallback `http://localhost:4200`. Credenciales por cookie ⇒ **no se puede usar
 | PUT | `/projects/{projectId}/files/{fileId}` | editor | Renombrar |
 | PUT | `/projects/{projectId}/files/{fileId}/content` | editor | Guardar contenido |
 | DELETE | `/projects/{projectId}/files/{fileId}` | editor | Cascade a hijos |
-| POST | `/projects/{projectId}/compile` | miembro | `application/pdf` o 422 |
+| POST | `/projects/{projectId}/compile` | miembro | `CompileResponse{Pdf}` en base64 (antes `application/pdf`) o 422 |
 | GET | `/projects/{projectId}/invitations` | owner | Lista invitaciones, estado derivado (`EXPIRED`) |
 | POST | `/projects/{projectId}/invitations` | owner | Crea y envía la invitación por correo |
 | POST | `/projects/{projectId}/invitations/{id}/resend` | owner | Nuevo token, invalida el anterior |
 | DELETE | `/projects/{projectId}/invitations/{id}` | owner | Revoca (solo si `PENDING`) |
 | GET | `/invitations/{token}` | sesión | Preview; 404/410/403 según estado |
 | POST | `/invitations/{token}/accept` | sesión | Crea el `ProjectMember`; idempotente |
+| GET | `/crypto/session` | sesión | `SessionKeyResponse{Key,Algorithm,Version}`; 401 si falta el claim `session_key` |
+
+Todas las rutas anteriores salvo `/auth/*`, `/crypto/session` y `/swagger*` viajan
+envueltas en el sobre `{alg,v,iv,ct}` (ver §3b): el cuerpo de petición y el de
+respuesta, éxito o error.
 
 Detalles que el frontend asume:
 
@@ -336,14 +393,34 @@ GOOGLE_OAUTH_CLIENT_SECRET=...
 MAIL_USER=tucuenta@gmail.com
 MAIL_PASSWORD=...                  # contraseña de aplicación de 16 caracteres (requiere 2FA)
 CHROMIUM_PATH=/ruta/a/chromium     # opcional
+CRYPTO_MASTER_KEY=...              # 32 bytes en base64: openssl rand -base64 32
+APP_DB_USER=overleaf_app           # rol restringido, creado por 00-bootstrap.sql
+APP_DB_PASSWORD=...                # contraseña de ese rol
 ```
 
 `Program.cs` falla al arrancar si falta `CONNECTION_STRING`,
-`GOOGLE_OAUTH_CLIENT_ID`/`SECRET` (desde `AddAuth`), o `MAIL_USER`/`MAIL_PASSWORD`
-(desde `AddMailer`). Esto es intencional: no hay modo degradado. `MAIL_PASSWORD`
-**no** es la contraseña normal de la cuenta de Gmail: hace falta una
-[contraseña de aplicación](https://myaccount.google.com/apppasswords), que exige
-tener 2FA activo.
+`GOOGLE_OAUTH_CLIENT_ID`/`SECRET` (desde `AddAuth`), `MAIL_USER`/`MAIL_PASSWORD`
+(desde `AddMailer`), o `CRYPTO_MASTER_KEY` (desde `AddCrypto`, que además exige
+que decodifique a exactamente 32 bytes). Esto es intencional: no hay modo
+degradado. `MAIL_PASSWORD` **no** es la contraseña normal de la cuenta de
+Gmail: hace falta una [contraseña de aplicación](https://myaccount.google.com/apppasswords),
+que exige tener 2FA activo.
+
+**`Data/Sql/00-bootstrap.sql` se ejecuta una sola vez, a mano, como
+superusuario** de PostgreSQL: crea la extensión `pgcrypto` y el rol
+`overleaf_app`. `Migrate()` corre con ese rol restringido al arrancar, y ese
+rol no puede crear extensiones ni roles — por eso este paso no es una
+migración de EF Core. Después de ejecutarlo, `CONNECTION_STRING` debe apuntar
+a `overleaf_app`/`APP_DB_PASSWORD` en vez del superusuario.
+
+> **Advertencias de operación:**
+> - No habilitar el log de parámetros en PostgreSQL (`log_parameter_max_length`,
+>   o `log_statement = 'all'` combinado con logging de parámetros en errores):
+>   `K_master` viaja como parámetro enlazado a las funciones `app_crypto.*`, y
+>   con ese logging activo acabaría en el log junto al ciphertext que protege.
+> - El botón "Try it out" de Swagger ya no sirve para las rutas de datos:
+>   enviaría JSON en claro y recibiría el `400` del middleware. Es consecuencia
+>   aceptada del enfoque de sobre uniforme (§3b).
 
 ```bash
 dotnet run                                   # arranca y aplica migraciones solo
@@ -397,11 +474,13 @@ Checklist antes de dar algo por terminado:
 Listo: editor Markdown → PDF, compilación automática al guardar, CRUD de
 proyectos, árbol de archivos, guardado persistente, atajos de teclado,
 invitaciones a proyectos por correo electrónico (crear, listar, revocar,
-reenviar, aceptar; `ProjectMember` se crea al aceptar).
+reenviar, aceptar; `ProjectMember` se crea al aceptar), y el flujo de
+encriptación en tres capas (navegador↔API con `K_session`, almacenamiento
+con `K_master` y funciones `pgcrypto`; ver §3b).
 
 Por hacer, en orden de dependencia:
 
 - Edición **en tiempo real** → necesitará un canal push (SignalR/WebSocket) y una
   estrategia de merge; hoy el guardado es `PUT` de contenido completo.
-- Del README raíz, aún sin empezar: control de cambios (autoría/fecha),
-  exportar/importar ZIP, y el flujo de encriptación extremo a extremo.
+- Del README raíz, aún sin empezar: control de cambios (autoría/fecha) y
+  exportar/importar ZIP.
