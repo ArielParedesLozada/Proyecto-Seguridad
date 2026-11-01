@@ -8,7 +8,7 @@ import { API_ROUTES } from '../constants/api.constants';
  * endpoint `/auth/me` del backend (autenticación basada en cookies). Si el
  * usuario no está logueado, redirige a la ruta de login.
  */
-export const authGuard: CanActivateFn = (): Promise<boolean | UrlTree> => {
+export const authGuard: CanActivateFn = (_route, state): Promise<boolean | UrlTree> => {
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
 
@@ -22,6 +22,8 @@ export const authGuard: CanActivateFn = (): Promise<boolean | UrlTree> => {
     method: 'GET',
     credentials: 'include',
   })
-    .then((response) => (response.ok ? true : router.createUrlTree(['/login'])))
-    .catch(() => router.createUrlTree(['/login']));
+    .then((response) =>
+      response.ok ? true : router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }),
+    )
+    .catch(() => router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }));
 };

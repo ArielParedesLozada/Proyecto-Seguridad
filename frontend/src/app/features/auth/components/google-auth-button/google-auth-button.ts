@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { API_ROUTES } from '../../../../core/constants/api.constants';
 
 @Component({
@@ -9,6 +9,12 @@ import { API_ROUTES } from '../../../../core/constants/api.constants';
 })
 export class GoogleAuthButtonComponent {
   readonly label = input.required<string>();
+  readonly returnUrl = input<string | null>(null);
   readonly selected = output<void>();
-  readonly googleLoginUrl = `${API_ROUTES.BASE_URL}${API_ROUTES.auth.login}`;
+
+  readonly googleLoginUrl = computed(() => {
+    const base = `${API_ROUTES.BASE_URL}${API_ROUTES.auth.login}`;
+    const returnUrl = this.returnUrl();
+    return returnUrl ? `${base}?returnUrl=${encodeURIComponent(returnUrl)}` : base;
+  });
 }

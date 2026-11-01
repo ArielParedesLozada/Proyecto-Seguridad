@@ -10,7 +10,7 @@
       <p class="intro">Continúa trabajando en tus documentos LaTeX.</p>
 
       <div class="provider-actions">
-        <app-google-auth-button label="Continuar con Google"></app-google-auth-button>
+        <app-google-auth-button label="Continuar con Google" [returnUrl]="returnUrl"></app-google-auth-button>
       </div>
       <p class="register-prompt">¿Aún no tienes cuenta? <a routerLink="/">Regístrate gratis</a></p>
     </section>
