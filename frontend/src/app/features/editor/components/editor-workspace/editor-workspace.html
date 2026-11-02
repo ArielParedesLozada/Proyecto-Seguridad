@@ -274,10 +274,11 @@
       </div>
       <textarea
         #codeInput
-        aria-label="Contenido LaTeX de {{ activeFileId() }}"
+        aria-label="Contenido Markdown de {{ activeFileId() }}"
         spellcheck="false"
         wrap="soft"
         [value]="activeContent()"
+        [readOnly]="!canEdit()"
         (input)="updateContent($event)"
         (scroll)="updateScroll($event)"
       ></textarea>

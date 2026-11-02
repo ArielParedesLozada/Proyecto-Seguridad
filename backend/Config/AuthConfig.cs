@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Backend.App.Auth;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -60,6 +61,9 @@ public static class AuthConfig
                     var user = await loginService.LoginWithGoogleAsync(context.Principal!);
                     var identity = (ClaimsIdentity)context.Principal!.Identity!;
                     identity.AddClaim(new Claim(AuthClaimTypes.UserId, user.Id.ToString()));
+
+                    var sessionKey = RandomNumberGenerator.GetBytes(32);
+                    identity.AddClaim(new Claim(AuthClaimTypes.SessionKey, Convert.ToBase64String(sessionKey)));
                 };
                 options.Events.OnRemoteFailure = context =>
                 {

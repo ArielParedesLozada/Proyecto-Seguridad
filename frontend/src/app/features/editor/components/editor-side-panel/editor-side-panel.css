@@ -201,6 +201,43 @@ h2 {
   background: var(--highlight-bg);
 }
 
+.file-row-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.file-row-main span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-row > button:not(.file-row-main) {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.3rem;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.file-row > button:not(.file-row-main):hover {
+  background: var(--surface-hover);
+}
+
 .outline-item {
   display: block;
   padding: 0.45rem 0.85rem 0.45rem 1.55rem;

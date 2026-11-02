@@ -4,32 +4,31 @@
   config,
   inputs,
   ...
-}: let
-  dotnetCombined = pkgs.dotnetCorePackages.combinePackages [
-    pkgs.dotnetCorePackages.sdk_8_0
-    #pkgs.dotnetCorePackages.sdk_10_0
-  ];
-in {
-  env.name = "overleaf";
+}: {
+  env = {
+    name = "overleaf";
+    NIX_LD_LIBRARY_PATH = lib.makeLibraryPath (with pkgs; [
+      icu
+      openssl
+      stdenv.cc.cc.lib
+    ]);
+    CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium";
+  };
 
   languages.dotnet = {
     enable = true;
-    package = dotnetCombined;
+    package = pkgs.dotnetCorePackages.sdk_8_0;
     lsp.enable = true;
   };
+
+  dotenv.disableHint = true;
 
   packages = with pkgs; [
     nodejs
     pnpm
     dotnet-ef
+    chromium
   ];
-
-  # env.DOTNET_ROOT = "${dotnetCombined}";
-  env.NIX_LD_LIBRARY_PATH = lib.makeLibraryPath (with pkgs; [
-    icu
-    openssl
-    stdenv.cc.cc.lib
-  ]);
 
   enterShell = ''
     export PATH="$PWD/frontend/node_modules/.bin:$PATH"

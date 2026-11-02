@@ -84,6 +84,19 @@ h1 {
   color: var(--text-color-secondary);
   line-height: 1.5;
 }
+.create-project-content input {
+  width: 100%;
+  border: 1px solid var(--surface-border);
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  color: var(--text-color);
+  background: var(--surface-ground);
+  font: inherit;
+}
+.project-error {
+  margin: 0 1.25rem 1rem;
+  color: var(--color-danger);
+}
 @media (max-width: 760px) {
   .workspace-header,
   .project-toolbar {
@@ -94,4 +107,9 @@ h1 {
   .primary-action {
     width: 100%;
   }
+}
+.share-project-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }

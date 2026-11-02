@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Backend.Config;
 using Backend.Data.Database;
+using Backend.Presentation.Middleware;
+using Microsoft.EntityFrameworkCore;
 DotNetEnv.Env.Load();
 
 // Env.load();
@@ -13,11 +15,17 @@ builder.Services.AddSwaggerGen();
 var CONNECTION_STRING = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 var GOOGLE_OAUTH_CLIENT_ID = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CLIENT_ID")!;
 var GOOGLE_OAUTH_CLIENT_SECRET = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CLIENT_SECRET")!;
+var MAIL_USER = Environment.GetEnvironmentVariable("MAIL_USER")!;
+var MAIL_PASSWORD = Environment.GetEnvironmentVariable("MAIL_PASSWORD")!;
+var CRYPTO_MASTER_KEY = Environment.GetEnvironmentVariable("CRYPTO_MASTER_KEY")!;
 if (string.IsNullOrWhiteSpace(CONNECTION_STRING))
     throw new InvalidOperationException("Falta la cadena de conexión 'Default' en la configuración.");
 builder.Services
     .AddDatabase(CONNECTION_STRING)
     .AddServices()
+    .AddCompilation()
+    .AddMailer(builder.Configuration, MAIL_USER, MAIL_PASSWORD)
+    .AddCrypto(CRYPTO_MASTER_KEY)
     .AddAuth(GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, builder.Configuration);
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
@@ -36,11 +44,12 @@ app.UseForwardedHeaders();
 app.UseCors(AuthConfig.CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<CryptoEnvelopeMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<AppDatabase>();
-    database.Database.EnsureCreated();
+    database.Database.Migrate();
 }
 
 app.MapControllers();

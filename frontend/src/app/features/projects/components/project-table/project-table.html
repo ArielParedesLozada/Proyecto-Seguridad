@@ -46,6 +46,7 @@
             [project]="project"
             [selected]="isSelected(project.id)"
             (selectionChanged)="toggleProject(project.id, $event)"
+            (actionSelected)="actionSelected.emit({ project, action: $event })"
           ></tr>
         }
       </tbody>

@@ -15,6 +15,7 @@ import {
 } from '@lucide/angular';
 import { API_ROUTES } from '../../core/constants/api.constants';
 import { AuthService } from '../../core/auth/auth.service';
+import { SessionKeyService } from '../../core/crypto/session-key.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { UiFooterComponent } from '../../shared/components/ui-footer/ui-footer';
 import { UiTooltipComponent } from '../../shared/components/ui-tooltip/ui-tooltip';
@@ -46,11 +47,15 @@ import { UiBrandLogoComponent } from '../../shared/components/ui-brand-logo/ui-b
 export class AppLayoutComponent {
   readonly theme = inject(ThemeService);
   readonly auth = inject(AuthService);
+  private readonly sessionKey = inject(SessionKeyService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
     this.auth.loadCurrentUser();
+    void this.sessionKey.load().catch(() => {
+      // authGuard ya redirige a /login si la sesión no es válida.
+    });
   }
   readonly sidebarOpen = signal(true);
   readonly mobileMenuOpen = signal(false);
@@ -83,6 +88,7 @@ export class AppLayoutComponent {
     this.settingsMenuOpen.set(false);
     this.profileMenuOpen.set(false);
     this.auth.clear();
+    this.sessionKey.clear();
     void fetch(`${API_ROUTES.BASE_URL}${API_ROUTES.auth.logout}`, {
       method: 'POST',
       credentials: 'include',

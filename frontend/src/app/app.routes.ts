@@ -6,6 +6,7 @@ import { ComingSoonComponent } from './features/system/pages/coming-soon/coming-
 import { AppLayoutComponent } from './layouts/app-layout/app-layout';
 import { authGuard } from './core/auth/auth.guard';
 import { EditorLayoutComponent } from './layouts/editor-layout/editor-layout';
+import { InvitationAcceptComponent } from './features/collaboration/pages/invitation-accept/invitation-accept';
 export const routes: Routes = [
   {
     path: '',
@@ -19,6 +20,12 @@ export const routes: Routes = [
   {
     path: 'editor/:projectId',
     component: EditorLayoutComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'invitations/:token',
+    component: InvitationAcceptComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'projects',

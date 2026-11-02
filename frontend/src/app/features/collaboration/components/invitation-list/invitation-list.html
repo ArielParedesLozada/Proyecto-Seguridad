@@ -1,0 +1,37 @@
+@if (invitations().length === 0) {
+  <app-ui-empty-state
+    icon="✉"
+    title="Sin invitaciones"
+    description="Todavía no has invitado a nadie a este proyecto."
+  />
+} @else {
+  <ul class="invitation-list">
+    @for (invitation of invitations(); track invitation.id) {
+      <li class="invitation-row">
+        <div class="invitation-info">
+          <strong>{{ invitation.email }}</strong>
+          <span class="invitation-meta">
+            {{ roleLabel(invitation) }} · vence el {{ formatExpiresAt(invitation.expiresAt) }}
+          </span>
+        </div>
+        <app-ui-status-badge [label]="invitation.status" [tone]="tone(invitation.status)" />
+        @if (canManage(invitation)) {
+          <div class="invitation-actions">
+            <app-ui-button
+              label="Reenviar"
+              severity="secondary"
+              [outlined]="true"
+              (pressed)="resendRequested.emit(invitation.id)"
+            />
+            <app-ui-button
+              label="Revocar"
+              severity="danger"
+              [outlined]="true"
+              (pressed)="revokeRequested.emit(invitation.id)"
+            />
+          </div>
+        }
+      </li>
+    }
+  </ul>
+}

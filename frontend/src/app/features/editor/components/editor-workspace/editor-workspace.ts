@@ -38,6 +38,8 @@ import { UiSearchInputComponent } from '../../../../shared/components/ui-search-
 import { UiTabsComponent, UiTab } from '../../../../shared/components/ui-tabs/ui-tabs';
 import { UiTooltipComponent } from '../../../../shared/components/ui-tooltip/ui-tooltip';
 import { EditorVisualDocumentComponent } from '../editor-visual-document/editor-visual-document';
+import { ProjectFile } from '../../models/project-file.interface';
+import { KeyboardShortcutService } from '../../../../core/shortcuts/keyboard-shortcut.service';
 
 type ToolbarMenu = 'heading' | 'math' | 'list' | 'overflow' | null;
 type OverflowSubmenu = Exclude<ToolbarMenu, 'overflow' | null>;
@@ -79,18 +81,24 @@ type TextMatch = { start: number; end: number };
 })
 export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
   private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly shortcutService = inject(KeyboardShortcutService);
   private resizeObserver: ResizeObserver | null = null;
 
   @ViewChild('toolbarOverflow') private toolbarOverflow?: ElementRef<HTMLElement>;
   @ViewChild('codeInput') private codeInput?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('documentSearchInput') private documentSearchInput?: UiSearchInputComponent;
 
-  readonly selectedFile = input<string | null>('main.tex');
+  readonly selectedFile = input<ProjectFile | null>(null);
+  readonly canEdit = input(false);
+  readonly savedFileId = input<string | null>(null);
+  readonly saveVersion = input(0);
   readonly activeFileChanged = output<string | null>();
+  readonly contentSaved = output<{ id: string; content: string }>();
+  readonly recompileRequested = output<void>();
   readonly commentRequested = output<void>();
-  readonly tabs = signal<UiTab[]>([{ id: 'main.tex', label: 'main.tex' }]);
-  readonly activeFileId = signal<string | null>('main.tex');
-  readonly fileModes = signal<Record<string, EditorMode>>({ 'main.tex': 'code' });
+  readonly tabs = signal<UiTab[]>([]);
+  readonly activeFileId = signal<string | null>(null);
+  readonly fileModes = signal<Record<string, EditorMode>>({});
   readonly openToolbarMenu = signal<ToolbarMenu>(null);
   readonly openOverflowSubmenu = signal<OverflowSubmenu | null>(null);
   readonly overflowAvailableWidth = signal(0);
@@ -105,23 +113,7 @@ export class EditorWorkspaceComponent implements AfterViewInit, OnDestroy {
     regularExpression: false,
     wholeWord: false,
   });
-  readonly fileContents = signal<Record<string, string>>({
-    'main.tex': `\\documentclass{article}
-\\usepackage{graphicx}
-
-\\title{Ejemplo}
-\\author{CipherTeX}
-\\date{\\today}
-
-\\begin{document}
-
-\\maketitle
-
-\\section{Introducción}
-Escribe aquí el contenido de tu documento.
-
-\\end{document}`,
-  });
+  readonly fileContents = signal<Record<string, string>>({});
   readonly headingOptions = [
     'Texto normal',
     'Sección',
@@ -134,7 +126,7 @@ Escribe aquí el contenido de tu documento.
   readonly listOptions = ['Lista con viñetas', 'Lista numerada'];
   readonly activeContent = computed(() => {
     const activeFile = this.activeFileId();
-    return activeFile ? (this.fileContents()[activeFile] ?? this.defaultContent(activeFile)) : '';
+    return activeFile ? (this.fileContents()[activeFile] ?? '') : '';
   });
   readonly mode = computed<EditorMode>(() => {
     const activeFile = this.activeFileId();
@@ -160,8 +152,13 @@ Escribe aquí el contenido de tu documento.
 
   constructor() {
     effect(() => {
-      const fileName = this.selectedFile();
-      if (fileName) this.openFile(fileName);
+      const file = this.selectedFile();
+      if (file) this.openFile(file);
+    });
+    effect(() => {
+      const fileId = this.savedFileId();
+      if (!this.saveVersion() || !fileId) return;
+      this.tabs.update((tabs) => tabs.map((tab) => tab.id === fileId ? { ...tab, dirty: false } : tab));
     });
     effect(() => {
       const matchCount = this.documentMatches().length;
@@ -240,6 +237,7 @@ Escribe aquí el contenido de tu documento.
   }
 
   updateContent(event: Event): void {
+    if (!this.canEdit()) return;
     const fileName = this.activeFileId();
     if (!fileName) return;
 
@@ -300,6 +298,7 @@ Escribe aquí el contenido de tu documento.
   }
 
   replaceCurrentDocumentMatch(): void {
+    if (!this.canEdit()) return;
     const match = this.activeDocumentMatch();
     const fileName = this.activeFileId();
     if (!match || !fileName) return;
@@ -311,6 +310,7 @@ Escribe aquí el contenido de tu documento.
   }
 
   replaceAllDocumentMatches(): void {
+    if (!this.canEdit()) return;
     const matches = this.documentMatches();
     if (!matches.length || !this.activeFileId()) return;
 
@@ -326,9 +326,26 @@ Escribe aquí el contenido de tu documento.
 
   @HostListener('document:keydown', ['$event'])
   onDocumentKeydown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+    if (this.shortcutService.matches(event, 'SAVE_DOCUMENT')) {
+      event.preventDefault();
+      const fileId = this.activeFileId();
+      if (fileId && this.canEdit()) {
+        const content = this.codeInput?.nativeElement.value ?? this.activeContent();
+        this.fileContents.update((contents) => ({ ...contents, [fileId]: content }));
+        this.contentSaved.emit({ id: fileId, content });
+      }
+      return;
+    }
+
+    if (this.shortcutService.matches(event, 'FIND')) {
       event.preventDefault();
       this.openDocumentSearch();
+      return;
+    }
+
+    if (this.shortcutService.matches(event, 'RECOMPILE')) {
+      event.preventDefault();
+      this.recompileRequested.emit();
       return;
     }
 
@@ -356,21 +373,12 @@ Escribe aquí el contenido de tu documento.
     }
   }
 
-  private openFile(fileName: string): void {
-    if (!this.tabs().some((tab) => tab.id === fileName)) {
-      this.tabs.update((tabs) => [...tabs, { id: fileName, label: fileName }]);
+  private openFile(file: ProjectFile): void {
+    if (!this.tabs().some((tab) => tab.id === file.id)) {
+      this.tabs.update((tabs) => [...tabs, { id: file.id, label: file.name }]);
     }
-    if (!this.fileContents()[fileName]) {
-      this.fileContents.update((contents) => ({
-        ...contents,
-        [fileName]: this.defaultContent(fileName),
-      }));
-    }
-    this.activeFileId.set(fileName);
-  }
-
-  private defaultContent(fileName: string): string {
-    return `% ${fileName}\n\\begin{document}\n\n\\end{document}`;
+    this.fileContents.update((contents) => ({ ...contents, [file.id]: file.content ?? '' }));
+    this.activeFileId.set(file.id);
   }
 
   private moveDocumentMatch(direction: number): void {
@@ -382,6 +390,7 @@ Escribe aquí el contenido de tu documento.
   }
 
   private setActiveFileContent(content: string): void {
+    if (!this.canEdit()) return;
     const fileName = this.activeFileId();
     if (!fileName) return;
 
